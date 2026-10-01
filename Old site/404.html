@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <title>Not found</title>
+  <style>
+    body { margin: 0; min-height: 100dvh; display: grid; place-items: center; background: var(--bg, #0f1115); color: var(--text, #e8edf5); font: 16px/1.5 -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; }
+    a { color: var(--accent, #6ea8ff); text-decoration: none; }
+    p { color: var(--muted, #8b95a8); }
+  </style>
+  <link rel="stylesheet" href="shared/site.css" />
+  <script src="shared/site.js"></script>
+</head>
+<body>
+  <div class="bar" style="position:fixed;top:0;left:0;right:0"><a id="home" href="./">← Home</a></div>
+  <div>
+    <h1>Page not found</h1>
+    <p><a id="home" href="./">← Home</a></p>
+  </div>
+  <script>
+    (function () {
+      var parts = location.pathname.split("/").filter(Boolean);
+      var repo = parts[0] || "";
+      var home = repo && location.hostname.indexOf("github.io") !== -1 ? "/" + repo + "/" : "./";
+      document.getElementById("home").setAttribute("href", home);
+    })();
+  </script>
+</body>
+</html>

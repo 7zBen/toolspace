@@ -1,241 +1,97 @@
-<!DOCTYPE html>
-<html lang="en">
+<!doctype html>
+<html lang="en" data-root="">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
-  <title>Home</title>
-  <meta name="description" content="Tools & Games" />
-  <meta name="referrer" content="no-referrer" />
-  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Crect width='16' height='16' rx='4' fill='%23171a21'/%3E%3Ccircle cx='8' cy='8' r='3.2' fill='none' stroke='%236ea8ff' stroke-width='1.6'/%3E%3C/svg%3E" />
-  <style>
-    :root {
-      --bg: #0f1115;
-      --panel: #171a21;
-      --panel-2: #1e232d;
-      --line: #2a3140;
-      --text: #e8edf5;
-      --muted: #8b95a8;
-      --accent: #6ea8ff;
-      --shadow: 0 10px 30px rgba(0,0,0,.35);
-      --radius: 16px;
-    }
-    * { box-sizing: border-box; }
-    html, body { margin: 0; padding: 0; background: var(--bg); color: var(--text); font: 16px/1.5 -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; }
-    body { min-height: 100vh; }
-    .wrap { max-width: 880px; margin: 0 auto; padding: 48px 20px 80px; }
-    header { margin-bottom: 36px; display: flex; justify-content: space-between; align-items: flex-start; gap: 16px; }
-    h1 { font-size: clamp(28px, 6vw, 36px); letter-spacing: -.03em; margin: 0 0 8px; }
-    .lede { color: var(--muted); max-width: 46ch; margin: 0; }
-    section { margin-bottom: 36px; }
-    h2.section {
-      font-size: 13px; letter-spacing: .12em; text-transform: uppercase;
-      color: var(--muted); margin: 0 0 14px; font-weight: 600;
-    }
-    .grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; }
-    .grid > :last-child:nth-child(3n + 1) { grid-column: 1 / -1; }
-    .grid > :last-child:nth-child(3n + 2) { grid-column: span 2; }
-    a.card {
-      display: block; text-decoration: none; color: inherit;
-      background: var(--panel); border: 1px solid var(--line); border-radius: var(--radius);
-      padding: 18px 18px 16px; box-shadow: var(--shadow); min-height: 132px;
-    }
-    a.card:hover { border-color: var(--line-hover); background: var(--panel-2); }
-    a.card h3 { margin: 0 0 8px; font-size: 18px; letter-spacing: -.02em; }
-    a.card p { margin: 0; color: var(--muted); font-size: 14px; }
-    .slug { display: inline-block; margin-top: 14px; font-size: 11px; color: #6d778a; font-family: ui-monospace, SFMono-Regular, Menlo, monospace; }
-    .status { color: var(--muted); font-size: 13px; margin: 0 0 12px; }
-    @media (max-width: 720px) {
-      .grid { grid-template-columns: repeat(2, 1fr); }
-      .grid > :last-child:nth-child(3n + 1),
-      .grid > :last-child:nth-child(3n + 2) { grid-column: auto; }
-      .grid > :last-child:nth-child(2n + 1) { grid-column: 1 / -1; }
-    }
-    @media (max-width: 520px) {
-      .grid { grid-template-columns: 1fr; }
-      .grid > :last-child { grid-column: auto; }
-      .wrap { padding: 28px 14px 64px; }
-    }
-  </style>
-  <link rel="stylesheet" href="shared/site.css" />
-  <script src="shared/site.js"></script>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="light dark">
+  <meta name="theme-color" content="#f6f7f8">
+  <meta name="description" content="toolspace: a small set of everyday tools. Clock, link queue and QR maker, all running in your browser.">
+  <title>toolspace</title>
+  <link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400..800&display=swap">
+  <link rel="stylesheet" href="assets/site.css">
+  <script src="assets/site.js"></script>
 </head>
-<body>
-  <div class="wrap">
-    <header>
-      <div>
-        <h1 id="siteTitle">Home</h1>
-        <p class="lede" id="siteDesc">Tools & Games</p>
-      </div>
-    </header>
+<body data-page="home" data-title="Home">
+  <main class="main">
+    <div class="main-inner">
+      <section class="hero" aria-labelledby="hero-title">
+        <div>
+          <span class="hero-kicker"><span class="live-dot"></span> Your everyday workspace</span>
+          <h1 id="hero-title">Good tools. Less fuss.</h1>
+          <p>Useful little utilities, ready when you are. No account, no setup, nothing uploaded. Just open and go.</p>
+          <div class="hero-cta">
+            <a class="button button-hero" href="#tools">Explore the tools <span data-icon="arrow" data-icon-class="icon-sm"></span></a>
+            <a class="button button-hero-ghost" href="tools/link-queuer/" id="queue-cta">Open Link Queuer</a>
+          </div>
+        </div>
+        <a class="hero-clock" href="tools/clock/" aria-label="Open the clock">
+          <span class="hero-clock-label">Your time right now</span>
+          <div class="hero-time-row"><span class="hero-time" id="home-time">--:--</span><span class="hero-period" id="home-period"></span></div>
+          <div class="hero-date" id="home-date"></div>
+          <div class="hero-clock-foot"><span data-icon="clock" data-icon-class="icon-sm"></span><span id="home-zone">Local time</span></div>
+        </a>
+      </section>
 
-    <section>
-      <h2 class="section">Tools</h2>
-      <p class="status" id="toolsStatus">Loading…</p>
-      <div class="grid" id="toolsGrid"></div>
-    </section>
+      <section id="tools" aria-labelledby="tools-title">
+        <div class="section-heading">
+          <div><h2 id="tools-title">Tools</h2><p>Pick one and get right to it.</p></div>
+          <span class="pill" id="tool-count"></span>
+        </div>
+        <div class="tool-grid" id="tool-grid"></div>
+      </section>
+    </div>
+  </main>
 
-    <section>
-      <h2 class="section">Games</h2>
-      <p class="status" id="gamesStatus">Loading…</p>
-      <div class="grid" id="gamesGrid"></div>
-    </section>
-  </div>
   <script>
-    function humanize(slug) {
-      return String(slug)
-        .replace(/\.(html|md)$/i, "")
-        .replace(/[-_]+/g, " ")
-        .replace(/\s+/g, " ")
-        .trim()
-        .replace(/\b\w/g, function (c) { return c.toUpperCase(); });
-    }
+    (function () {
+      var ts = window.toolspace;
 
-    function pagesBase() {
-      const parts = location.pathname.split("/").filter(Boolean);
-      if (parts.length && !parts[parts.length - 1].includes(".")) {
-        return "/" + parts.join("/");
-      }
-      if (parts.length) parts.pop();
-      return parts.length ? "/" + parts.join("/") : "";
-    }
+      // Tool cards come from the shared registry so the sidebar and home never drift apart.
+      var grid = document.getElementById("tool-grid");
+      grid.innerHTML = ts.tools.map(function (t) {
+        return '<a class="tool-card" href="' + t.href + '">' +
+          '<span class="tool-card-icon ' + t.tint + '">' + ts.icon(t.icon, "icon-lg") + "</span>" +
+          "<strong>" + ts.escapeHtml(t.name) + "</strong>" +
+          "<span>" + ts.escapeHtml(t.blurb) + "</span>" +
+          '<span class="tool-card-go">Open ' + ts.icon("arrow", "icon-sm") + "</span></a>";
+      }).join("");
+      document.getElementById("tool-count").textContent = ts.tools.length + " TOOLS";
 
-    function detectGithub() {
-      const host = location.hostname;
-      const parts = location.pathname.split("/").filter(Boolean);
-      if (host.endsWith(".github.io")) {
-        const owner = host.slice(0, -".github.io".length);
-        const repo = parts[0] || (owner + ".github.io");
-        return { owner: owner, repo: repo };
-      }
-      return { owner: "7zBen", repo: "stuff" };
-    }
-
-    function absHref(base, href, folder, slug) {
-      if (href) {
-        if (/^https?:\/\//i.test(href)) return href;
-        if (href.charAt(0) === "/") return href;
-        return base + "/" + href.replace(/^\.\//, "");
-      }
-      return base + "/" + folder + "/" + encodeURIComponent(slug) + "/";
-    }
-
-    async function fetchJson(url) {
+      // Live clock in the hero, using the clock tool's 12/24h preference.
+      var clockPrefs = ts.store.get("toolspace-clock", {});
+      var hour12 = typeof clockPrefs.hour12 === "boolean"
+        ? clockPrefs.hour12
+        : /am|pm/i.test(new Date(2020, 0, 1, 13).toLocaleTimeString());
+      var timeEl = document.getElementById("home-time");
+      var periodEl = document.getElementById("home-period");
+      var dateEl = document.getElementById("home-date");
       try {
-        const res = await fetch(url, { cache: "no-store" });
-        if (!res.ok) return null;
-        return await res.json();
-      } catch {
-        return null;
-      }
-    }
-
-    async function fromApi(owner, repo, base, folder, metaName) {
-      if (!owner || !repo) return [];
-      const res = await fetch(
-        "https://api.github.com/repos/" + encodeURIComponent(owner) + "/" + encodeURIComponent(repo) + "/contents/" + folder,
-        { headers: { Accept: "application/vnd.github+json" } }
-      );
-      if (!res.ok) throw new Error("GitHub API " + res.status);
-      const entries = await res.json();
-      if (!Array.isArray(entries)) return [];
-      const dirs = entries.filter(function (entry) {
-        return entry.type === "dir" && entry.name && !entry.name.startsWith(".");
-      });
-      return Promise.all(dirs.map(async function (entry) {
-        const meta = await fetchJson(base + "/" + folder + "/" + entry.name + "/" + metaName);
-        return {
-          slug: entry.name,
-          name: (meta && meta.name) || humanize(entry.name),
-          description: (meta && meta.description) || "",
-          href: absHref(base, meta && meta.href, folder, entry.name),
-          newTab: !!(meta && meta.newTab)
-        };
-      }));
-    }
-
-    async function fromManifest(base, folder) {
-      const manifest = await fetchJson(base + "/" + folder + "/manifest.json");
-      const list = manifest && (manifest.tools || manifest.games || manifest.items);
-      if (!Array.isArray(list)) return [];
-      return list.filter(function (item) { return item && item.slug; }).map(function (item) {
-        return {
-          slug: item.slug,
-          name: item.name || humanize(item.slug),
-          description: item.description || "",
-          href: absHref(base, item.href, folder, item.slug),
-          newTab: !!item.newTab
-        };
-      });
-    }
-
-    function mergeItems(discovered, extras) {
-      const map = {};
-      discovered.forEach(function (item) { map[item.slug] = item; });
-      extras.forEach(function (item) {
-        map[item.slug] = Object.assign({}, map[item.slug] || {}, item);
-      });
-      return Object.keys(map).map(function (k) { return map[k]; });
-    }
-
-    function render(grid, items) {
-      grid.textContent = "";
-      items.slice().sort(function (a, b) { return a.name.localeCompare(b.name); }).forEach(function (item) {
-        const a = document.createElement("a");
-        a.className = "card";
-        a.href = item.href;
-        if (item.newTab || item.slug === "slope") {
-          a.target = "_blank";
-          a.rel = "noopener noreferrer";
+        document.getElementById("home-zone").textContent =
+          Intl.DateTimeFormat().resolvedOptions().timeZone.replace(/_/g, " ");
+      } catch (e) {}
+      function tick() {
+        var now = new Date();
+        var h = now.getHours();
+        var m = String(now.getMinutes()).padStart(2, "0");
+        if (hour12) {
+          timeEl.textContent = (h % 12 || 12) + ":" + m;
+          periodEl.textContent = h >= 12 ? "PM" : "AM";
+        } else {
+          timeEl.textContent = String(h).padStart(2, "0") + ":" + m;
+          periodEl.textContent = "";
         }
-        const h3 = document.createElement("h3");
-        h3.textContent = item.name;
-        const p = document.createElement("p");
-        p.textContent = item.description;
-        a.append(h3, p);
-        grid.appendChild(a);
-      });
-    }
-
-    async function loadSection(owner, repo, base, folder, metaName, grid, status) {
-      status.textContent = "Loading…";
-      const extras = await fromManifest(base, folder);
-      if (extras.length) {
-        status.textContent = "";
-        render(grid, extras);
+        dateEl.textContent = now.toLocaleDateString(undefined, { weekday: "long", day: "numeric", month: "long", year: "numeric" });
       }
-      try {
-        const discovered = await fromApi(owner, repo, base, folder, metaName);
-        const items = mergeItems(discovered, extras);
-        if (!items.length) {
-          status.textContent = extras.length ? "" : "Nothing here yet.";
-          return;
-        }
-        status.textContent = "";
-        render(grid, items);
-      } catch (err) {
-        console.warn(err);
-        if (!extras.length) status.textContent = "Couldn’t load this list.";
-      }
-    }
+      tick();
+      setInterval(tick, 1000);
 
-    (async function init() {
-      const base = pagesBase();
-      const site = (await fetchJson(base + "/site.json")) || {};
-      if (site.title) {
-        document.getElementById("siteTitle").textContent = site.title;
-        document.title = site.title;
-      }
-      if (site.description) document.getElementById("siteDesc").textContent = site.description;
-
-      const detected = detectGithub();
-      const owner = (site.github && site.github.owner) || detected.owner;
-      const repo = (site.github && site.github.repo) || detected.repo;
-
-      await Promise.all([
-        loadSection(owner, repo, base, "tools", "tool.json", document.getElementById("toolsGrid"), document.getElementById("toolsStatus")),
-        loadSection(owner, repo, base, "games", "game.json", document.getElementById("gamesGrid"), document.getElementById("gamesStatus"))
-      ]);
-      document.querySelectorAll("a[href*='github.com/7zBen'], footer").forEach(function (el) { el.remove(); });
+      // If there's a queue waiting, say so on the hero button.
+      var queue = ts.store.get("link-queuer-v1", null);
+      var left = queue && Array.isArray(queue.items) ? queue.items.filter(function (i) { return !i.done; }).length : 0;
+      if (left) document.getElementById("queue-cta").textContent = left + (left === 1 ? " link" : " links") + " waiting";
     })();
   </script>
 </body>

@@ -1,273 +1,401 @@
-<!DOCTYPE html>
-<html lang="en">
+<!doctype html>
+<html lang="en" data-root="../../">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
-  <title>Clock</title>
-  <meta name="description" content="A full-screen live clock." />
-  <meta name="referrer" content="no-referrer" />
-  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Crect width='16' height='16' rx='4' fill='%23171a21'/%3E%3Ccircle cx='8' cy='8' r='4.2' fill='none' stroke='%236ea8ff' stroke-width='1.5'/%3E%3Cpath d='M8 5.2V8l2 1.4' fill='none' stroke='%236ea8ff' stroke-width='1.4' stroke-linecap='round'/%3E%3C/svg%3E" />
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="light dark">
+  <meta name="theme-color" content="#f6f7f8">
+  <meta name="description" content="A big, calm clock. Digital or analog, five faces, and fullscreen.">
+  <title>Clock · toolspace</title>
+  <link rel="icon" href="../../assets/favicon.svg" type="image/svg+xml">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400..800&display=swap">
+  <link rel="stylesheet" href="../../assets/site.css">
+  <script src="../../assets/site.js"></script>
   <style>
-    :root { --bg:#0f1115; --text:#e8edf5; --muted:#8b95a8; --accent:#6ea8ff; --line:#2a3140; --clock:#e8edf5; --hand:#e8edf5; --sec:#fb7185; }
-    * { box-sizing: border-box; }
-    html, body { margin: 0; height: 100%; background: var(--bg); color: var(--text); font: 16px/1.4 -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; }
-    body {
-      min-height: 100vh;
-      display: flex;
-      flex-direction: column;
-      background: var(--clock-bg, var(--bg));
+    .stage {
+      --face-bg: #0f1a2c;
+      --face-text: #f0f4fa;
+      --face-muted: #8e9bb3;
+      --face-accent: #8d9aff;
+      --face-tick: rgb(255 255 255 / 22%);
+      position: relative;
+      display: grid;
+      place-items: center;
+      aspect-ratio: 16 / 10;
+      overflow: hidden;
+      border-radius: var(--radius);
+      background: var(--face-bg);
+      color: var(--face-text);
+      box-shadow: var(--shadow);
+      container-type: size;
+      transition: background .35s, color .35s;
+      user-select: none;
+      -webkit-user-select: none;
     }
-    .bar {
-      display: flex; justify-content: space-between; align-items: center;
-      padding: 16px 20px; color: var(--muted); font-size: 13px;
-    }
-    .bar a { color: var(--muted); text-decoration: none; }
-    .bar a:hover { color: var(--accent); }
-    .bar button {
-      appearance: none; background: var(--panel, transparent); border: 1px solid var(--line);
-      color: var(--text); border-radius: 999px; padding: 6px 12px; cursor: pointer; font: inherit; font-size: 13px;
-    }
-    .stage { flex: 1; display: grid; place-items: center; padding: 24px 20px 48px; text-align: center; }
-    .stage > div { display: flex; flex-direction: column; align-items: center; }
-    .digital { display: inline-flex; align-items: flex-start; justify-content: center; gap: .28em; }
-    .hm {
-      font-variant-numeric: tabular-nums;
-      font-weight: 560;
-      letter-spacing: .02em;
-      font-size: clamp(52px, 14vw, 160px);
-      line-height: .95;
-    }
-    .subsec {
-      display: flex;
-      flex-direction: column;
-      align-items: flex-start;
-      padding-top: .18em;
-      min-width: 2.6ch;
-    }
-    .secs {
-      font-variant-numeric: tabular-nums;
-      font-size: clamp(22px, 5.4vw, 54px);
-      color: var(--muted);
-      font-weight: 500;
-      letter-spacing: .04em;
-      line-height: 1;
-    }
-    .ampm {
-      font-size: clamp(12px, 2vw, 18px);
-      color: var(--muted);
-      text-transform: lowercase;
-      margin-top: .25em;
-      min-height: 1.2em;
-    }
-    .date { margin: 18px 0 0; color: var(--muted); font-size: clamp(16px, 2.4vw, 26px); }
-    .analog {
-      width: min(72vw, 420px);
-      height: auto;
-      display: none;
-      filter: drop-shadow(0 18px 40px rgba(0,0,0,.28));
-    }
-    body.is-analog .digital { display: none; }
-    body.is-analog .analog { display: block; }
-    .dial { fill: color-mix(in srgb, var(--panel, #171a21) 82%, transparent); stroke: var(--line); stroke-width: 3; }
-    .tick { stroke: var(--muted); stroke-width: 2; stroke-linecap: round; }
-    .tick.major { stroke: var(--text); stroke-width: 3; }
-    .hand { stroke: var(--hand); stroke-linecap: round; }
-    .hand.hour { stroke-width: 7; }
-    .hand.min { stroke-width: 5; }
-    .hand.sec { stroke: var(--sec); stroke-width: 2; }
-    .cap { fill: var(--sec); }
+    .stage[data-face="paper"] { --face-bg: #f4efe6; --face-text: #2a2620; --face-muted: #8a7f70; --face-accent: #c0583a; --face-tick: rgb(42 38 32 / 22%); }
+    .stage[data-face="sage"]  { --face-bg: #1f2e28; --face-text: #e4efe7; --face-muted: #8ea99a; --face-accent: #9ed3b5; --face-tick: rgb(228 239 231 / 22%); }
+    .stage[data-face="ember"] { --face-bg: #1d1412; --face-text: #ffe8d6; --face-muted: #b08e7a; --face-accent: #ff8a4c; --face-tick: rgb(255 232 214 / 20%); }
+    .stage[data-face="mono"]  { --face-bg: #000;    --face-text: #fff;    --face-muted: #8a8a8a; --face-accent: #fff;    --face-tick: rgb(255 255 255 / 25%); }
+    .stage[data-face="paper"] { border: 1px solid var(--border); }
 
-    body[data-skin="0"] {
-      --clock-bg:
-        radial-gradient(1200px 600px at 20% -10%, #1d2a44 0%, transparent 55%),
-        radial-gradient(900px 500px at 110% 110%, #1a2438 0%, transparent 50%),
-        var(--bg);
-    }
-    html[data-theme="light"] body[data-skin="0"] {
-      --clock-bg:
-        radial-gradient(1200px 600px at 20% -10%, #d7e3f6 0%, transparent 55%),
-        radial-gradient(900px 500px at 110% 110%, #e6edf8 0%, transparent 50%),
-        var(--bg);
-    }
-    body[data-skin="1"] {
-      --clock-bg:
-        radial-gradient(900px 500px at 10% 0%, #7a2e12 0%, transparent 50%),
-        linear-gradient(160deg, #1a0c08, #3b140c 55%, #0f1115);
-      --accent: #ffb020; --sec: #ffb020;
-    }
-    html[data-theme="light"] body[data-skin="1"] {
-      --clock-bg:
-        radial-gradient(900px 500px at 10% 0%, #ffd7b0 0%, transparent 50%),
-        linear-gradient(160deg, #fff4ea, #ffd0b0);
-      --accent: #c2410c; --sec: #c2410c;
-    }
-    body[data-skin="2"] {
-      --clock-bg:
-        radial-gradient(800px 500px at 80% 10%, #14532d 0%, transparent 45%),
-        linear-gradient(180deg, #052e16, #0f1115);
-      --accent: #4ade80; --sec: #4ade80;
-    }
-    html[data-theme="light"] body[data-skin="2"] {
-      --clock-bg:
-        radial-gradient(800px 500px at 80% 10%, #bbf7d0 0%, transparent 45%),
-        linear-gradient(180deg, #ecfdf3, #d1fae5);
-      --accent: #15803d; --sec: #15803d;
-    }
-    body[data-skin="3"] {
-      --clock-bg:
-        radial-gradient(600px 400px at 20% 80%, #5b21b6 0%, transparent 50%),
-        radial-gradient(700px 400px at 90% 10%, #0e7490 0%, transparent 46%),
-        #0b1020;
-      --accent: #c084fc; --sec: #67e8f9;
-    }
-    html[data-theme="light"] body[data-skin="3"] {
-      --clock-bg:
-        radial-gradient(600px 400px at 20% 80%, #e9d5ff 0%, transparent 50%),
-        radial-gradient(700px 400px at 90% 10%, #a5f3fc 0%, transparent 46%),
-        #eef4ff;
-      --accent: #7c3aed; --sec: #0891b2;
-    }
-    body[data-skin="4"] {
-      --clock-bg:
-        repeating-linear-gradient(0deg, transparent 0 31px, rgba(110,168,255,.12) 31px 32px),
-        repeating-linear-gradient(90deg, transparent 0 31px, rgba(110,168,255,.12) 31px 32px),
-        #0c1220;
-      --accent: #6ea8ff; --sec: #6ea8ff;
-    }
-    html[data-theme="light"] body[data-skin="4"] {
-      --clock-bg:
-        repeating-linear-gradient(0deg, transparent 0 31px, rgba(59,111,212,.12) 31px 32px),
-        repeating-linear-gradient(90deg, transparent 0 31px, rgba(59,111,212,.12) 31px 32px),
-        #f4f7fb;
-      --accent: #3b6fd4; --sec: #3b6fd4;
-    }
+    .stage-inner { display: grid; justify-items: center; gap: 2cqh; }
+    .digital { display: flex; align-items: center; gap: 2.2cqw; font-variant-numeric: tabular-nums; line-height: .9; }
+    .digital .hm { font-size: min(21cqw, 46cqh); font-weight: 650; letter-spacing: -.05em; }
+    .digital .side { display: grid; gap: 1.2cqh; justify-items: start; }
+    .digital .secs { font-size: min(6.5cqw, 14cqh); font-weight: 560; color: var(--face-accent); letter-spacing: -.02em; }
+    .digital .ampm { font-size: min(3.2cqw, 7cqh); font-weight: 700; color: var(--face-muted); letter-spacing: .08em; text-transform: uppercase; }
+    .date { margin: 0; color: var(--face-muted); font-size: min(2.6cqw, 5.4cqh); font-weight: 560; letter-spacing: .01em; text-align: center; }
+    .zone { color: var(--face-accent); }
+
+    .analog { display: none; width: min(78cqh, 78cqw); height: min(78cqh, 78cqw); }
+    .is-analog .analog { display: block; }
+    .is-analog .digital { display: none; }
+    .is-analog .stage-inner { gap: 1.4cqh; }
+    .is-analog .analog { width: min(70cqh, 70cqw); height: min(70cqh, 70cqw); }
+    .analog .dial { fill: none; stroke: var(--face-tick); stroke-width: 1.5; }
+    .analog .tick { stroke: var(--face-tick); stroke-width: 1.2; stroke-linecap: round; }
+    .analog .tick.major { stroke: var(--face-text); stroke-width: 2.6; opacity: .75; }
+    .analog .hand { stroke: var(--face-text); stroke-linecap: round; }
+    .analog .hour { stroke-width: 6; }
+    .analog .min { stroke-width: 4; }
+    .analog .sec { stroke: var(--face-accent); stroke-width: 1.6; }
+    .analog .cap { fill: var(--face-accent); }
+    .analog .num { fill: var(--face-muted); font: 600 13px var(--font); text-anchor: middle; dominant-baseline: central; }
+
+    .stage-controls { position: absolute; top: 14px; right: 14px; display: flex; gap: 8px; opacity: .55; transition: opacity .2s; }
+    .stage:hover .stage-controls, .stage:focus-within .stage-controls { opacity: 1; }
+    .stage-button { display: inline-grid; place-items: center; width: 38px; height: 38px; padding: 0; border: 1px solid color-mix(in srgb, var(--face-text) 18%, transparent); border-radius: 11px; background: color-mix(in srgb, var(--face-bg) 70%, transparent); color: var(--face-text); backdrop-filter: blur(6px); }
+    .stage-button:hover { border-color: var(--face-accent); }
+
+    /* Fullscreen: real API where available, a fixed overlay otherwise (iPhone). */
+    .stage:fullscreen, .stage.pseudo-full { aspect-ratio: auto; width: 100vw; height: 100vh; border-radius: 0; border: 0; }
+    .stage.pseudo-full { position: fixed; inset: 0; z-index: 100; height: 100dvh; }
+    .stage.idle { cursor: none; }
+    .stage.idle .stage-controls { opacity: 0; }
+    body.lock-scroll { overflow: hidden; }
+
+    .face-label { display: block; margin-top: 8px; color: var(--muted); font-size: 12px; }
+    .shortcuts { display: flex; flex-wrap: wrap; gap: 14px; color: var(--muted); font-size: 12px; }
+    .shortcuts span { display: inline-flex; align-items: center; gap: 6px; }
+
+    @media (max-width: 640px) { .stage { aspect-ratio: 4 / 3.4; } .digital .hm { font-size: min(24cqw, 46cqh); } .date { font-size: min(4.2cqw, 6cqh); } }
   </style>
-  <link rel="stylesheet" href="../../shared/site.css" />
-  <script src="../../shared/site.js"></script>
 </head>
-<body data-skin="0">
-  <div class="bar">
-    <a href="../../">← Home</a>
-    <button type="button" id="fmt">24h</button>
-    <button type="button" class="icon-btn" id="analog" aria-label="Analog clock" title="Analog clock">
-      <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="8"/><path d="M12 8v4l3 2"/></svg>
-    </button>
-    <button type="button" class="icon-btn" id="skin" aria-label="Clock face" title="Clock face">
-      <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14.5 4.5l5 5-9.2 9.2a4 4 0 0 1-5.7-5.7L14.5 4.5z"/><path d="M12 19.5h8"/></svg>
-    </button>
-  </div>
-  <div class="stage">
-    <div>
-      <div class="digital" id="digital">
-        <span class="hm" id="hm">00:00</span>
-        <span class="subsec">
-          <span class="secs" id="secs">00</span>
-          <span class="ampm" id="ampm"></span>
-        </span>
+<body data-page="clock" data-title="Clock">
+  <main class="main">
+    <div class="main-inner">
+      <div class="page-heading">
+        <span class="eyebrow">Everyday</span>
+        <h1>A clock worth looking at.</h1>
+        <p>Keep time front and center. Pick a face, then take it fullscreen on a spare screen or tablet. Your settings stay on this device.</p>
       </div>
-      <svg class="analog" id="analogFace" viewBox="0 0 200 200" aria-hidden="true">
-        <circle class="dial" cx="100" cy="100" r="96"/>
-        <g id="ticks"></g>
-        <line class="hand hour" id="hourHand" x1="100" y1="100" x2="100" y2="52"/>
-        <line class="hand min" id="minHand" x1="100" y1="100" x2="100" y2="30"/>
-        <line class="hand sec" id="secHand" x1="100" y1="112" x2="100" y2="22"/>
-        <circle class="cap" cx="100" cy="100" r="5"/>
-      </svg>
-      <p class="date" id="date"></p>
+
+      <div class="tool-layout">
+        <div class="stack">
+          <div class="stage" id="stage" data-face="midnight">
+            <div class="stage-controls">
+              <button class="stage-button" type="button" id="fs-button" aria-label="Fullscreen" title="Fullscreen (F)"><span data-icon="expand"></span></button>
+            </div>
+            <div class="stage-inner">
+              <div class="digital" aria-hidden="true">
+                <span class="hm" id="hm">--:--</span>
+                <span class="side"><span class="secs" id="secs">--</span><span class="ampm" id="ampm"></span></span>
+              </div>
+              <svg class="analog" id="analog" viewBox="0 0 200 200" aria-hidden="true">
+                <circle class="dial" cx="100" cy="100" r="96"/>
+                <g id="ticks"></g>
+                <line class="hand hour" id="hand-h" x1="100" y1="100" x2="100" y2="54"/>
+                <line class="hand min" id="hand-m" x1="100" y1="100" x2="100" y2="28"/>
+                <line class="hand sec" id="hand-s" x1="100" y1="116" x2="100" y2="20"/>
+                <circle class="cap" cx="100" cy="100" r="4.5"/>
+              </svg>
+              <p class="date" id="date"></p>
+            </div>
+            <span class="sr-only" id="sr-time" aria-live="off"></span>
+          </div>
+          <div class="shortcuts">
+            <span><kbd>F</kbd> fullscreen</span>
+            <span><kbd>A</kbd> analog / digital</span>
+            <span><kbd>C</kbd> next face</span>
+            <span>Double-click the clock for fullscreen</span>
+          </div>
+        </div>
+
+        <div class="stack">
+          <div class="surface">
+            <div class="surface-title">
+              <div><h2>Make it yours</h2><p>Saved on this device.</p></div>
+              <span data-icon="clock"></span>
+            </div>
+            <div class="field">
+              <span class="field-label">Style</span>
+              <div class="segmented" role="group" aria-label="Clock style">
+                <button type="button" data-mode="digital" aria-pressed="true">Digital</button>
+                <button type="button" data-mode="analog" aria-pressed="false">Analog</button>
+              </div>
+            </div>
+            <div class="setting-row">
+              <span class="setting-copy"><strong>12-hour time</strong><small>Show AM and PM</small></span>
+              <label class="switch"><input id="opt-12h" type="checkbox" aria-label="12-hour time"><span></span></label>
+            </div>
+            <div class="setting-row">
+              <span class="setting-copy"><strong>Seconds</strong><small>Show the seconds</small></span>
+              <label class="switch"><input id="opt-secs" type="checkbox" aria-label="Show seconds"><span></span></label>
+            </div>
+            <div class="setting-row">
+              <span class="setting-copy"><strong>Date</strong><small>Day, month and year</small></span>
+              <label class="switch"><input id="opt-date" type="checkbox" aria-label="Show date"><span></span></label>
+            </div>
+            <hr class="divider">
+            <div class="field">
+              <span class="field-label">Face</span>
+              <div class="swatches" id="faces" role="group" aria-label="Clock face"></div>
+              <span class="face-label" id="face-name"></span>
+            </div>
+            <div class="field">
+              <label for="opt-zone">Time zone</label>
+              <select class="select" id="opt-zone"></select>
+            </div>
+          </div>
+          <div class="info-box">
+            <span data-icon="info"></span>
+            <div><strong>Tip:</strong> on iPhone, add this page to your Home Screen for a clean fullscreen clock with no browser bars.</div>
+          </div>
+        </div>
+      </div>
     </div>
-  </div>
+  </main>
+
   <script>
     (function () {
-      const hmEl = document.getElementById("hm");
-      const secsEl = document.getElementById("secs");
-      const ampmEl = document.getElementById("ampm");
-      const dateEl = document.getElementById("date");
-      const fmtBtn = document.getElementById("fmt");
-      const analogBtn = document.getElementById("analog");
-      const skinBtn = document.getElementById("skin");
-      const hourHand = document.getElementById("hourHand");
-      const minHand = document.getElementById("minHand");
-      const secHand = document.getElementById("secHand");
-      let hour12 = localStorage.getItem("clock-12") === "1";
-      let analog = localStorage.getItem("clock-analog") === "1";
-      let skin = parseInt(localStorage.getItem("clock-skin") || "0", 10) || 0;
-      if (skin < 0 || skin > 4) skin = 0;
+      "use strict";
+      var ts = window.toolspace;
+      var KEY = "toolspace-clock";
 
-      const ticks = document.getElementById("ticks");
-      for (let i = 0; i < 60; i++) {
-        const a = (i / 60) * Math.PI * 2;
-        const inner = i % 5 === 0 ? 78 : 86;
-        const line = document.createElementNS("http://www.w3.org/2000/svg", "line");
-        line.setAttribute("class", "tick" + (i % 5 === 0 ? " major" : ""));
-        line.setAttribute("x1", String(100 + Math.sin(a) * inner));
-        line.setAttribute("y1", String(100 - Math.cos(a) * inner));
-        line.setAttribute("x2", String(100 + Math.sin(a) * 92));
-        line.setAttribute("y2", String(100 - Math.cos(a) * 92));
+      var FACES = [
+        { id: "midnight", name: "Midnight", bg: "#0f1a2c", fg: "#8d9aff" },
+        { id: "paper", name: "Paper", bg: "#f4efe6", fg: "#c0583a" },
+        { id: "sage", name: "Sage", bg: "#1f2e28", fg: "#9ed3b5" },
+        { id: "ember", name: "Ember", bg: "#1d1412", fg: "#ff8a4c" },
+        { id: "mono", name: "Mono", bg: "#000000", fg: "#ffffff" }
+      ];
+      var ZONES = [
+        ["local", "My local time"], ["UTC", "UTC"],
+        ["America/Los_Angeles", "Los Angeles"], ["America/Denver", "Denver"], ["America/Chicago", "Chicago"],
+        ["America/New_York", "New York"], ["America/Sao_Paulo", "São Paulo"],
+        ["Europe/London", "London"], ["Europe/Paris", "Paris"], ["Europe/Berlin", "Berlin"], ["Europe/Athens", "Athens"],
+        ["Africa/Johannesburg", "Johannesburg"], ["Asia/Dubai", "Dubai"], ["Asia/Kolkata", "Mumbai"],
+        ["Asia/Singapore", "Singapore"], ["Asia/Shanghai", "Shanghai"], ["Asia/Tokyo", "Tokyo"],
+        ["Australia/Sydney", "Sydney"], ["Pacific/Auckland", "Auckland"]
+      ];
+
+      var localUses12h = /am|pm/i.test(new Date(2020, 0, 1, 13).toLocaleTimeString());
+      var prefs = Object.assign(
+        { hour12: localUses12h, seconds: true, date: true, analog: false, face: "midnight", zone: "local" },
+        ts.store.get(KEY, {})
+      );
+      if (!FACES.some(function (f) { return f.id === prefs.face; })) prefs.face = "midnight";
+      function save() { ts.store.set(KEY, prefs); }
+
+      var $ = function (id) { return document.getElementById(id); };
+      var stage = $("stage");
+      var hmEl = $("hm"), secsEl = $("secs"), ampmEl = $("ampm"), dateEl = $("date");
+      var handH = $("hand-h"), handM = $("hand-m"), handS = $("hand-s");
+
+      /* Analog dial */
+      var ticks = $("ticks");
+      var svgNS = "http://www.w3.org/2000/svg";
+      for (var i = 0; i < 60; i++) {
+        var a = i / 60 * Math.PI * 2;
+        var major = i % 5 === 0;
+        var inner = major ? 82 : 87;
+        var line = document.createElementNS(svgNS, "line");
+        line.setAttribute("class", "tick" + (major ? " major" : ""));
+        line.setAttribute("x1", 100 + Math.sin(a) * inner);
+        line.setAttribute("y1", 100 - Math.cos(a) * inner);
+        line.setAttribute("x2", 100 + Math.sin(a) * 92);
+        line.setAttribute("y2", 100 - Math.cos(a) * 92);
         ticks.appendChild(line);
       }
+      [12, 3, 6, 9].forEach(function (n) {
+        var ang = n / 12 * Math.PI * 2;
+        var t = document.createElementNS(svgNS, "text");
+        t.setAttribute("class", "num");
+        t.setAttribute("x", 100 + Math.sin(ang) * 69);
+        t.setAttribute("y", 100 - Math.cos(ang) * 69);
+        t.textContent = n;
+        ticks.appendChild(t);
+      });
 
+      /* Time zone */
+      var zoneSelect = $("opt-zone");
+      zoneSelect.innerHTML = ZONES.map(function (z) {
+        return '<option value="' + z[0] + '">' + z[1] + "</option>";
+      }).join("");
+      if (!ZONES.some(function (z) { return z[0] === prefs.zone; })) prefs.zone = "local";
+
+      var partsFmt, dateFmt;
+      function buildFormatters() {
+        var tz = prefs.zone === "local" ? undefined : prefs.zone;
+        partsFmt = new Intl.DateTimeFormat("en-US", { timeZone: tz, hourCycle: "h23", hour: "numeric", minute: "numeric", second: "numeric" });
+        dateFmt = new Intl.DateTimeFormat(undefined, { timeZone: tz, weekday: "long", day: "numeric", month: "long", year: "numeric" });
+      }
+      function nowParts(d) {
+        var out = {};
+        partsFmt.formatToParts(d).forEach(function (p) { if (p.type !== "literal") out[p.type] = parseInt(p.value, 10); });
+        if (out.hour === 24) out.hour = 0;
+        return out;
+      }
+
+      /* Render loop */
+      var lastSecond = -1;
       function pad(n) { return String(n).padStart(2, "0"); }
-      function setHand(el, deg) {
-        el.setAttribute("transform", "rotate(" + deg + " 100 100)");
-      }
-      function applySkin() {
-        document.body.setAttribute("data-skin", String(skin));
-        localStorage.setItem("clock-skin", String(skin));
-      }
-      function applyAnalog() {
-        document.body.classList.toggle("is-analog", analog);
-        analogBtn.setAttribute("aria-pressed", analog ? "true" : "false");
-        localStorage.setItem("clock-analog", analog ? "1" : "0");
-      }
+      function frame() {
+        var d = new Date();
+        var p = nowParts(d);
+        var ms = d.getMilliseconds();
 
-      function tick() {
-        const now = new Date();
-        let hours = now.getHours();
-        const minutes = now.getMinutes();
-        const seconds = now.getSeconds();
-        const ms = now.getMilliseconds();
-        if (hour12) {
-          ampmEl.textContent = hours >= 12 ? "pm" : "am";
-          hours = hours % 12 || 12;
-          hmEl.textContent = hours + ":" + pad(minutes);
-        } else {
-          ampmEl.textContent = "";
-          hmEl.textContent = pad(hours) + ":" + pad(minutes);
+        if (prefs.analog) {
+          var s = p.second + ms / 1000;
+          var m = p.minute + s / 60;
+          var h = (p.hour % 12) + m / 60;
+          handS.setAttribute("transform", "rotate(" + (s * 6) + " 100 100)");
+          handM.setAttribute("transform", "rotate(" + (m * 6) + " 100 100)");
+          handH.setAttribute("transform", "rotate(" + (h * 30) + " 100 100)");
         }
-        secsEl.textContent = pad(seconds);
-        dateEl.textContent = now.toLocaleDateString(undefined, {
-          weekday: "long",
-          day: "numeric",
-          month: "long",
-          year: "numeric"
-        });
-        fmtBtn.textContent = hour12 ? "12h" : "24h";
-        const s = seconds + ms / 1000;
-        const m = minutes + s / 60;
-        const h = (now.getHours() % 12) + m / 60;
-        setHand(secHand, s * 6);
-        setHand(minHand, m * 6);
-        setHand(hourHand, h * 30);
+        if (p.second !== lastSecond) {
+          lastSecond = p.second;
+          if (prefs.hour12) {
+            hmEl.textContent = (p.hour % 12 || 12) + ":" + pad(p.minute);
+            ampmEl.textContent = p.hour >= 12 ? "PM" : "AM";
+          } else {
+            hmEl.textContent = pad(p.hour) + ":" + pad(p.minute);
+            ampmEl.textContent = "";
+          }
+          secsEl.textContent = pad(p.second);
+          var dateText = dateFmt.format(d);
+          if (prefs.zone !== "local") {
+            var zone = ZONES.filter(function (z) { return z[0] === prefs.zone; })[0];
+            dateEl.innerHTML = '<span class="zone">' + zone[1] + "</span> · " + ts.escapeHtml(dateText);
+          } else {
+            dateEl.textContent = dateText;
+          }
+          $("sr-time").textContent = hmEl.textContent + " " + ampmEl.textContent;
+        }
+        // Analog sweeps smoothly; digital only needs to wake when the second changes.
+        if (prefs.analog) requestAnimationFrame(frame);
+        else setTimeout(frame, Math.min(250, 1000 - ms + 5));
       }
 
-      fmtBtn.addEventListener("click", function () {
-        hour12 = !hour12;
-        localStorage.setItem("clock-12", hour12 ? "1" : "0");
-        tick();
+      /* Apply settings to the UI */
+      var faceWrap = $("faces");
+      faceWrap.innerHTML = FACES.map(function (f) {
+        return '<button class="swatch" type="button" data-face="' + f.id + '" aria-label="' + f.name + '" title="' + f.name +
+          '" style="background: linear-gradient(135deg, ' + f.bg + " 55%, " + f.fg + ' 55%)"></button>';
+      }).join("");
+
+      function apply() {
+        stage.setAttribute("data-face", prefs.face);
+        stage.classList.toggle("is-analog", prefs.analog);
+        secsEl.hidden = !prefs.seconds;
+        handS.style.display = prefs.seconds ? "" : "none";
+        dateEl.hidden = !prefs.date;
+        $("opt-12h").checked = prefs.hour12;
+        $("opt-secs").checked = prefs.seconds;
+        $("opt-date").checked = prefs.date;
+        zoneSelect.value = prefs.zone;
+        Array.prototype.forEach.call(document.querySelectorAll("[data-mode]"), function (b) {
+          b.setAttribute("aria-pressed", String((b.getAttribute("data-mode") === "analog") === prefs.analog));
+        });
+        Array.prototype.forEach.call(faceWrap.children, function (b) {
+          b.setAttribute("aria-pressed", String(b.getAttribute("data-face") === prefs.face));
+        });
+        $("face-name").textContent = FACES.filter(function (f) { return f.id === prefs.face; })[0].name;
+        lastSecond = -1;
+      }
+      function update(patch) {
+        Object.assign(prefs, patch);
+        if ("zone" in patch) buildFormatters();
+        save();
+        apply();
+      }
+
+      $("opt-12h").addEventListener("change", function (e) { update({ hour12: e.target.checked }); });
+      $("opt-secs").addEventListener("change", function (e) { update({ seconds: e.target.checked }); });
+      $("opt-date").addEventListener("change", function (e) { update({ date: e.target.checked }); });
+      zoneSelect.addEventListener("change", function (e) { update({ zone: e.target.value }); });
+      Array.prototype.forEach.call(document.querySelectorAll("[data-mode]"), function (b) {
+        b.addEventListener("click", function () { update({ analog: b.getAttribute("data-mode") === "analog" }); });
       });
-      analogBtn.addEventListener("click", function () {
-        analog = !analog;
-        applyAnalog();
+      faceWrap.addEventListener("click", function (e) {
+        var b = e.target.closest("[data-face]");
+        if (b) update({ face: b.getAttribute("data-face") });
       });
-      skinBtn.addEventListener("click", function () {
-        skin = (skin + 1) % 5;
-        applySkin();
+      function nextFace() {
+        var idx = FACES.findIndex(function (f) { return f.id === prefs.face; });
+        update({ face: FACES[(idx + 1) % FACES.length].id });
+      }
+
+      /* Fullscreen */
+      var fsButton = $("fs-button");
+      var canNativeFs = !!(stage.requestFullscreen || stage.webkitRequestFullscreen);
+      function isFull() {
+        return !!(document.fullscreenElement || document.webkitFullscreenElement) || stage.classList.contains("pseudo-full");
+      }
+      function toggleFull() {
+        if (isFull()) {
+          if (stage.classList.contains("pseudo-full")) setPseudo(false);
+          else (document.exitFullscreen || document.webkitExitFullscreen).call(document);
+          return;
+        }
+        if (canNativeFs) {
+          var req = stage.requestFullscreen || stage.webkitRequestFullscreen;
+          var result = req.call(stage);
+          if (result && result.catch) result.catch(function () { setPseudo(true); });
+        } else {
+          setPseudo(true);
+        }
+      }
+      function setPseudo(on) {
+        stage.classList.toggle("pseudo-full", on);
+        document.body.classList.toggle("lock-scroll", on);
+        paintFs();
+      }
+      function paintFs() {
+        var full = isFull();
+        fsButton.innerHTML = ts.icon(full ? "shrink" : "expand");
+        fsButton.setAttribute("aria-label", full ? "Exit fullscreen" : "Fullscreen");
+        if (!full) stage.classList.remove("idle");
+      }
+      fsButton.addEventListener("click", toggleFull);
+      stage.addEventListener("dblclick", function (e) { if (!e.target.closest(".stage-controls")) toggleFull(); });
+      document.addEventListener("fullscreenchange", paintFs);
+      document.addEventListener("webkitfullscreenchange", paintFs);
+
+      // Hide the cursor and button after a few still seconds in fullscreen.
+      var idleTimer;
+      function wake() {
+        stage.classList.remove("idle");
+        clearTimeout(idleTimer);
+        if (isFull()) idleTimer = setTimeout(function () { stage.classList.add("idle"); }, 2500);
+      }
+      stage.addEventListener("pointermove", wake);
+      stage.addEventListener("pointerdown", wake);
+
+      document.addEventListener("keydown", function (e) {
+        if (e.metaKey || e.ctrlKey || e.altKey || e.target.closest("input, select, textarea")) return;
+        var k = e.key.toLowerCase();
+        if (k === "f") { e.preventDefault(); toggleFull(); }
+        else if (k === "a") update({ analog: !prefs.analog });
+        else if (k === "c") nextFace();
+        else if (e.key === "Escape" && stage.classList.contains("pseudo-full")) setPseudo(false);
       });
 
-      applySkin();
-      applyAnalog();
-      tick();
-      setInterval(tick, 50);
+      buildFormatters();
+      apply();
+      requestAnimationFrame(frame);
     })();
   </script>
 </body>

@@ -1,0 +1,511 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <title>Link Queuer</title>
+  <meta name="description" content="Paste a pile of links, open one, and it drops off the list. Nothing is uploaded." />
+  <meta name="referrer" content="no-referrer" />
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Crect width='16' height='16' rx='4' fill='%23171a21'/%3E%3Cpath d='M3 5h10M3 8h10M3 11h6' stroke='%233dd68c' stroke-width='1.6' stroke-linecap='round'/%3E%3C/svg%3E" />
+  <style>
+    :root {
+      --bg: #0f1115;
+      --panel: #171a21;
+      --panel-2: #1e232d;
+      --line: #2a3140;
+      --text: #e8edf5;
+      --muted: #8b95a8;
+      --accent: #6ea8ff;
+      --accent-2: #3d7dff;
+      --danger: #ff6b6b;
+      --shadow: 0 10px 30px rgba(0,0,0,.35);
+      --radius: 14px;
+    }
+    * { box-sizing: border-box; }
+    html, body { margin: 0; padding: 0; background: var(--bg); color: var(--text); font: 15px/1.45 -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; }
+    body { min-height: 100vh; }
+    .bar { display: flex; justify-content: space-between; align-items: center; padding: 14px 18px; }
+    .bar a { color: var(--muted); text-decoration: none; font-size: 13px; }
+    .bar a:hover { color: var(--accent); }
+    .wrap { max-width: 920px; margin: 0 auto; padding: 8px 20px 80px; }
+    header { display: flex; align-items: flex-start; justify-content: space-between; gap: 16px; margin-bottom: 20px; }
+    h1 { font-size: 22px; margin: 0 0 6px; letter-spacing: -.02em; }
+    .sub { color: var(--muted); font-size: 13px; max-width: 54ch; }
+    .privacy { margin-top: 6px; font-size: 12px; color: #6d778a; }
+    .stats { display: flex; gap: 8px; flex-wrap: wrap; }
+    .pill { background: var(--panel); border: 1px solid var(--line); border-radius: 999px; padding: 6px 10px; font-size: 12px; color: var(--muted); }
+    .pill b { color: var(--text); font-weight: 600; }
+    .toolbar { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 14px; }
+    button, .file-btn, a.btn {
+      appearance: none; border: 1px solid var(--line); background: var(--panel);
+      color: var(--text); border-radius: 10px; padding: 8px 12px; cursor: pointer;
+      font: inherit; font-size: 13px; text-decoration: none; display: inline-block;
+    }
+    button:hover, .file-btn:hover, a.btn:hover { border-color: #3a4560; background: var(--panel-2); }
+    button.primary { background: var(--accent-2); border-color: transparent; color: #fff; }
+    button.primary:hover { filter: brightness(1.08); }
+    button.ghost, a.btn.ghost { background: transparent; }
+    button:disabled { opacity: .45; cursor: not-allowed; }
+    .search { flex: 1; min-width: 180px; }
+    .search input {
+      width: 100%; background: var(--panel); border: 1px solid var(--line); color: var(--text);
+      border-radius: 10px; padding: 8px 12px; font: inherit; font-size: 13px;
+    }
+    .drop {
+      border: 1.5px dashed var(--line); border-radius: var(--radius); padding: 16px;
+      background: var(--panel); margin-bottom: 14px;
+    }
+    .drop.over { border-color: var(--accent); background: #1a2436; }
+    textarea {
+      width: 100%; min-height: 110px; resize: vertical; background: var(--panel-2);
+      color: var(--text); border: 1px solid var(--line); border-radius: 10px;
+      padding: 10px 12px; font: 13px/1.5 ui-monospace, SFMono-Regular, Menlo, monospace;
+    }
+    .hint { color: var(--muted); font-size: 12px; margin-top: 8px; }
+    .list { display: flex; flex-direction: column; gap: 8px; }
+    .item {
+      display: grid; grid-template-columns: 1fr auto; gap: 10px; align-items: center;
+      background: var(--panel); border: 1px solid var(--line); border-radius: 12px;
+      padding: 10px 12px; box-shadow: var(--shadow);
+    }
+    .meta { min-width: 0; }
+    .title { font-weight: 600; font-size: 14px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .url { color: var(--muted); font-size: 12px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .actions { display: flex; gap: 6px; flex-shrink: 0; }
+    .actions button, .actions a.btn { padding: 7px 10px; }
+    .open-btn { background: #1f3a2c; border-color: #2e5a43; color: #b6f0d0; }
+    .open-btn:hover { background: #254737; }
+    .keep-btn { color: var(--accent); }
+    .skip-btn { color: var(--danger); }
+    .empty { text-align: center; color: var(--muted); padding: 40px 10px; border: 1px dashed var(--line); border-radius: var(--radius); }
+    .toast {
+      position: fixed; bottom: 18px; left: 50%; transform: translateX(-50%);
+      background: #222834; border: 1px solid var(--line); color: var(--text);
+      padding: 10px 14px; border-radius: 999px; font-size: 13px; display: none;
+      box-shadow: var(--shadow); z-index: 20; max-width: calc(100% - 24px);
+    }
+    .kbd { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 11px; background: #11151c; border: 1px solid var(--line); border-radius: 6px; padding: 1px 5px; color: var(--muted); }
+    input[type="file"] { display: none; }
+    @media (max-width: 640px) {
+      .item { grid-template-columns: 1fr; }
+      .actions { justify-content: flex-start; }
+    }
+  </style>
+  <link rel="stylesheet" href="../../shared/site.css" />
+  <script src="../../shared/site.js"></script>
+</head>
+<body>
+  <div class="bar"><a id="homeLink" href="../../">← Home</a></div>
+  <div class="wrap">
+    <header>
+      <div>
+        <h1>Link Queuer</h1>
+        <div class="sub">Work through a list of links without losing your place. Click Open and that URL leaves the queue so you only see what is still left to visit.</div>
+        <div class="privacy">Runs entirely in this browser. Your list is stored locally and is never sent anywhere.</div>
+      </div>
+      <div class="stats">
+        <div class="pill">Left: <b id="count">0</b></div>
+        <div class="pill">Opened: <b id="opened">0</b></div>
+      </div>
+    </header>
+
+    <div class="drop" id="drop">
+      <textarea id="paste" placeholder="Paste links here, one per line (messy text is fine — URLs will be extracted)…"></textarea>
+      <div class="hint">Drop a .txt file here, or paste then hit Add to queue. Duplicate URLs are ignored. Only http(s) links are accepted.</div>
+      <div class="toolbar" style="margin:10px 0 0">
+        <button class="primary" id="addBtn" type="button">Add to queue</button>
+        <label class="file-btn">Load .txt file<input id="file" type="file" accept=".txt,.md,.csv,text/plain"></label>
+        <button class="ghost" id="replaceBtn" type="button">Replace queue with paste</button>
+      </div>
+    </div>
+
+    <div class="toolbar">
+      <div class="search"><input id="filter" type="search" placeholder="Filter remaining links…" autocomplete="off"></div>
+      <button id="openFirst" type="button">Open first</button>
+      <button id="undoBtn" type="button" disabled>Undo last</button>
+      <button id="exportBtn" type="button">Export remaining .txt</button>
+      <button id="clearDone" type="button">Clear opened history</button>
+      <button id="clearAll" type="button">Clear all</button>
+    </div>
+
+    <div class="list" id="list"></div>
+    <div class="empty" id="empty" hidden>Queue is empty. Paste some links above.</div>
+  </div>
+  <div class="toast" id="toast" role="status"></div>
+
+  <script>
+    (function () {
+      "use strict";
+
+      const STORAGE_KEY = "link-queuer-v1";
+      const MAX_ITEMS = 5000;
+      const state = {
+        items: [],
+        undo: null,
+        openedCount: 0
+      };
+
+      const $ = (id) => document.getElementById(id);
+      const paste = $("paste");
+      const listEl = $("list");
+      const emptyEl = $("empty");
+      const filterEl = $("filter");
+      const drop = $("drop");
+
+      function uid() {
+        return Date.now().toString(36) + Math.random().toString(36).slice(2, 8);
+      }
+
+      function isSafeHttpUrl(value) {
+        try {
+          const u = new URL(value);
+          return u.protocol === "http:" || u.protocol === "https:";
+        } catch {
+          return false;
+        }
+      }
+
+      function cleanUrl(raw) {
+        return String(raw).replace(/[.,;:!?)\]>]+$/g, "");
+      }
+
+      function extractUrls(text) {
+        const found = [];
+        const seen = new Set();
+        const re = /https?:\/\/[^\s<>"'`)\]]+/gi;
+        let match;
+        while ((match = re.exec(String(text || "")))) {
+          const url = cleanUrl(match[0]);
+          if (!isSafeHttpUrl(url) || seen.has(url)) continue;
+          seen.add(url);
+          found.push(url);
+        }
+        if (!found.length) {
+          String(text || "").split(/\r?\n/).forEach((line) => {
+            const trimmed = line.trim();
+            if (!isSafeHttpUrl(trimmed) || seen.has(trimmed)) return;
+            seen.add(trimmed);
+            found.push(trimmed);
+          });
+        }
+        return found;
+      }
+
+      function titleFromUrl(url) {
+        try {
+          const u = new URL(url);
+          const host = u.hostname.replace(/^www\./, "");
+          let path = u.pathname;
+          try { path = decodeURIComponent(path); } catch (_) {}
+          path = path.replace(/\/+$/, "");
+          const last = path.split("/").filter(Boolean).pop() || "";
+          const pretty = last.replace(/[-_]+/g, " ").replace(/\.[a-z0-9]+$/i, "");
+          return pretty ? host + " — " + pretty : host + (u.pathname || "/");
+        } catch {
+          return url;
+        }
+      }
+
+      function load() {
+        try {
+          const raw = localStorage.getItem(STORAGE_KEY);
+          if (!raw) return;
+          const parsed = JSON.parse(raw);
+          if (parsed && Array.isArray(parsed.items)) state.items = parsed.items.filter(validItem);
+          if (parsed && Number.isFinite(parsed.openedCount) && parsed.openedCount >= 0) {
+            state.openedCount = parsed.openedCount;
+          }
+          state.undo = parsed && parsed.undo && parsed.undo.id ? parsed.undo : null;
+        } catch {
+          state.items = [];
+          state.undo = null;
+          state.openedCount = 0;
+        }
+      }
+
+      function validItem(item) {
+        return item && typeof item.id === "string" && isSafeHttpUrl(item.url);
+      }
+
+      function save() {
+        try {
+          localStorage.setItem(STORAGE_KEY, JSON.stringify({
+            items: state.items,
+            openedCount: state.openedCount,
+            undo: state.undo
+          }));
+        } catch {
+          toast("Could not save locally (storage full or blocked)");
+        }
+      }
+
+      function remaining() {
+        return state.items.filter((item) => !item.done);
+      }
+
+      function toast(msg) {
+        const el = $("toast");
+        el.textContent = msg;
+        el.style.display = "block";
+        clearTimeout(toast._t);
+        toast._t = setTimeout(function () { el.style.display = "none"; }, 2200);
+      }
+
+      function addUrls(urls, options) {
+        const replace = options && options.replace;
+        const existing = new Set(state.items.map((item) => item.url));
+        const incoming = [];
+        for (let i = 0; i < urls.length; i++) {
+          const url = urls[i];
+          if (!isSafeHttpUrl(url)) continue;
+          if (!replace && existing.has(url)) continue;
+          if (incoming.some((row) => row.url === url)) continue;
+          incoming.push({
+            id: uid(),
+            url: url,
+            title: titleFromUrl(url),
+            done: false
+          });
+        }
+        if (replace) {
+          if (incoming.length + remaining().length > MAX_ITEMS && incoming.length > MAX_ITEMS) {
+            incoming.length = MAX_ITEMS;
+          }
+          state.items = incoming;
+          state.undo = null;
+        } else {
+          const room = Math.max(0, MAX_ITEMS - state.items.length);
+          state.items.push.apply(state.items, incoming.slice(0, room));
+          if (incoming.length > room) toast("Reached the " + MAX_ITEMS + " item cap");
+        }
+        save();
+        render();
+        toast(incoming.length
+          ? ("Added " + incoming.length + (incoming.length === 1 ? " link" : " links"))
+          : "Nothing new to add");
+      }
+
+      function openInNewTab(url) {
+        const a = document.createElement("a");
+        a.href = url;
+        a.target = "_blank";
+        a.rel = "noopener noreferrer";
+        a.referrerPolicy = "no-referrer";
+        document.body.appendChild(a);
+        a.click();
+        a.remove();
+      }
+
+      function openAndRemove(id) {
+        const item = state.items.find((row) => row.id === id);
+        if (!item || item.done) return;
+        openInNewTab(item.url);
+        markDone(item, "open");
+      }
+
+      function markDone(item, action) {
+        state.undo = { id: item.id, prev: Object.assign({}, item), action: action };
+        item.done = true;
+        item.openedAt = Date.now();
+        if (action === "open") state.openedCount += 1;
+        if (action === "skip") item.skipped = true;
+        save();
+        render();
+      }
+
+      function skip(id) {
+        const item = state.items.find((row) => row.id === id);
+        if (!item || item.done) return;
+        markDone(item, "skip");
+      }
+
+      function undo() {
+        if (!state.undo) return;
+        const item = state.items.find((row) => row.id === state.undo.id);
+        if (item) Object.assign(item, state.undo.prev);
+        if (state.undo.action === "open" && state.openedCount > 0) state.openedCount -= 1;
+        state.undo = null;
+        save();
+        render();
+        toast("Undid last change");
+      }
+
+      function exportTxt() {
+        const text = remaining().map((item) => item.url).join("\n");
+        const blob = new Blob([text ? text + "\n" : ""], { type: "text/plain" });
+        const a = document.createElement("a");
+        a.href = URL.createObjectURL(blob);
+        a.download = "remaining-links.txt";
+        document.body.appendChild(a);
+        a.click();
+        a.remove();
+        URL.revokeObjectURL(a.href);
+      }
+
+      function render() {
+        const query = filterEl.value.trim().toLowerCase();
+        const items = remaining().filter(function (item) {
+          if (!query) return true;
+          return item.url.toLowerCase().includes(query) || String(item.title || "").toLowerCase().includes(query);
+        });
+        const left = remaining().length;
+        $("count").textContent = String(left);
+        $("opened").textContent = String(state.openedCount || 0);
+        $("undoBtn").disabled = !state.undo;
+        document.title = left ? ("Link Queuer (" + left + " left)") : "Link Queuer";
+
+        listEl.textContent = "";
+        emptyEl.hidden = left > 0;
+
+        if (!items.length && left) {
+          const none = document.createElement("div");
+          none.className = "empty";
+          none.textContent = "No matches for “" + filterEl.value + "”";
+          listEl.appendChild(none);
+          return;
+        }
+
+        items.forEach(function (item, idx) {
+          const el = document.createElement("div");
+          el.className = "item";
+
+          const meta = document.createElement("div");
+          meta.className = "meta";
+          const title = document.createElement("div");
+          title.className = "title";
+          if (idx === 0 && !query) {
+            const kbd = document.createElement("span");
+            kbd.className = "kbd";
+            kbd.textContent = "↩";
+            title.append(kbd, document.createTextNode(" "));
+          }
+          title.append(document.createTextNode(item.title || item.url));
+          const url = document.createElement("div");
+          url.className = "url";
+          url.textContent = item.url;
+          meta.append(title, url);
+
+          const actions = document.createElement("div");
+          actions.className = "actions";
+
+          const openBtn = document.createElement("a");
+          openBtn.className = "btn open-btn";
+          openBtn.href = item.url;
+          openBtn.target = "_blank";
+          openBtn.rel = "noopener noreferrer";
+          openBtn.referrerPolicy = "no-referrer";
+          openBtn.title = "Open and remove from list";
+          openBtn.textContent = "Open";
+          openBtn.addEventListener("click", function () { markDone(item, "open"); });
+
+          const keepBtn = document.createElement("a");
+          keepBtn.className = "btn keep-btn ghost";
+          keepBtn.href = item.url;
+          keepBtn.target = "_blank";
+          keepBtn.rel = "noopener noreferrer";
+          keepBtn.referrerPolicy = "no-referrer";
+          keepBtn.title = "Open but keep in list";
+          keepBtn.textContent = "Keep";
+
+          const skipBtn = document.createElement("button");
+          skipBtn.className = "skip-btn ghost";
+          skipBtn.type = "button";
+          skipBtn.title = "Remove without opening";
+          skipBtn.textContent = "Skip";
+          skipBtn.addEventListener("click", function () { skip(item.id); });
+
+          actions.append(openBtn, keepBtn, skipBtn);
+          el.append(meta, actions);
+          listEl.appendChild(el);
+        });
+      }
+
+      $("addBtn").addEventListener("click", function () {
+        addUrls(extractUrls(paste.value));
+        paste.value = "";
+      });
+
+      $("replaceBtn").addEventListener("click", function () {
+        const urls = extractUrls(paste.value);
+        if (!urls.length) return toast("Paste some links first");
+        if (remaining().length && !window.confirm("Replace the current queue?")) return;
+        addUrls(urls, { replace: true });
+        paste.value = "";
+      });
+
+      $("file").addEventListener("change", function (event) {
+        const file = event.target.files && event.target.files[0];
+        event.target.value = "";
+        if (!file) return;
+        file.text().then(function (text) {
+          addUrls(extractUrls(text));
+        }).catch(function () {
+          toast("Could not read that file");
+        });
+      });
+
+      $("openFirst").addEventListener("click", function () {
+        const first = remaining()[0];
+        if (first) openAndRemove(first.id);
+      });
+      $("undoBtn").addEventListener("click", undo);
+      $("exportBtn").addEventListener("click", exportTxt);
+      $("clearDone").addEventListener("click", function () {
+        state.openedCount = 0;
+        state.items = remaining();
+        state.undo = null;
+        save();
+        render();
+      });
+      $("clearAll").addEventListener("click", function () {
+        if (!state.items.length) return;
+        if (!window.confirm("Clear the entire queue?")) return;
+        state.items = [];
+        state.undo = null;
+        save();
+        render();
+      });
+      filterEl.addEventListener("input", render);
+
+      ["dragenter", "dragover"].forEach(function (name) {
+        drop.addEventListener(name, function (event) {
+          event.preventDefault();
+          drop.classList.add("over");
+        });
+      });
+      ["dragleave", "drop"].forEach(function (name) {
+        drop.addEventListener(name, function (event) {
+          event.preventDefault();
+          drop.classList.remove("over");
+        });
+      });
+      drop.addEventListener("drop", function (event) {
+        const file = event.dataTransfer && event.dataTransfer.files && event.dataTransfer.files[0];
+        if (file) {
+          file.text().then(function (text) { addUrls(extractUrls(text)); }).catch(function () {
+            toast("Could not read that file");
+          });
+          return;
+        }
+        const text = event.dataTransfer ? event.dataTransfer.getData("text") : "";
+        if (text) addUrls(extractUrls(text));
+      });
+
+      document.addEventListener("keydown", function (event) {
+        if (event.target.closest("textarea, input")) return;
+        if ((event.metaKey || event.ctrlKey) && event.key.toLowerCase() === "z") {
+          event.preventDefault();
+          undo();
+        }
+        if (event.key === "Enter" && !event.metaKey && !event.ctrlKey && !event.altKey) {
+          const first = remaining()[0];
+          if (first && !filterEl.value) openAndRemove(first.id);
+        }
+      });
+
+      load();
+      render();
+    })();
+  </script>
+</body>
+</html>
