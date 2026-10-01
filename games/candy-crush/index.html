@@ -1,0 +1,40 @@
+<!doctype html>
+<html lang="en" data-root="../../">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="color-scheme" content="light dark">
+  <meta name="theme-color" content="#f6f7f8">
+  <meta name="description" content="Swap candies to match three or more.">
+  <title>Candy Crush · toolspace</title>
+  <link rel="icon" href="../../assets/favicon.svg" type="image/svg+xml">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400..800&display=swap">
+  <link rel="stylesheet" href="../../assets/site.css">
+  <link rel="stylesheet" href="../../assets/game.css">
+  <link rel="stylesheet" href="style.css">
+  <script src="../../assets/site.js"></script>
+  <script src="../../assets/game.js" defer></script>
+  <script src="game.js" defer></script>
+</head>
+<body data-layout="app" data-page="candy-crush" data-title="Candy Crush" data-back="games/" data-sound>
+  <main class="game">
+    <div class="hud">
+      <div class="stat"><span>Level</span><b id="level">1</b></div>
+      <div class="stat"><span>Score</span><b id="score">0</b></div>
+      <div class="stat"><span>Moves</span><b id="moves">0</b></div>
+    </div>
+    <div class="goal-bar" aria-hidden="true"><i id="goal-fill"></i></div>
+    <p class="goal-text" id="goal-text"></p>
+    <div class="board-wrap game-board" id="wrap">
+      <div class="board" id="board"></div>
+      <div class="pieces" id="pieces"></div>
+      <div class="fx" id="fx"></div>
+      <div class="overlay" id="overlay"><div><strong id="overlay-title"></strong><span id="overlay-text"></span></div></div>
+    </div>
+    <div class="game-actions"><button class="button button-secondary" type="button" id="restart">Start over from level 1</button></div>
+    <p class="game-hint">Swipe a candy toward a neighbour, or tap two candies. Make three or more in a row.</p>
+  </main>
+</body>
+</html>

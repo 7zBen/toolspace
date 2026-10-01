@@ -1,0 +1,48 @@
+<!doctype html>
+<html lang="en" data-root="../../">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="color-scheme" content="light dark">
+  <meta name="theme-color" content="#f6f7f8">
+  <meta name="description" content="Hold to pour. Let go on the line.">
+  <title>Fill the Mug · toolspace</title>
+  <link rel="icon" href="../../assets/favicon.svg" type="image/svg+xml">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400..800&display=swap">
+  <link rel="stylesheet" href="../../assets/site.css">
+  <link rel="stylesheet" href="../../assets/game.css">
+  <link rel="stylesheet" href="style.css">
+  <script src="../../assets/site.js"></script>
+  <script src="../../assets/game.js" defer></script>
+  <script src="game.js" defer></script>
+</head>
+<body data-layout="app" data-page="fill-the-mug" data-title="Fill the Mug" data-back="games/" data-sound>
+  <main class="game">
+    <div class="hud">
+      <div class="stat"><span>Target</span><b id="target">50%</b></div>
+      <div class="stat"><span>Streak</span><b id="streak">0</b></div>
+      <div class="stat"><span>Best</span><b id="best">0</b></div>
+    </div>
+    <div class="stage-wrap game-board" id="wrap">
+      <div class="scene" id="scene">
+        <div class="wall"></div>
+        <div class="tap-body"></div>
+        <div class="arm"></div>
+        <div class="spout"></div>
+        <div class="handle" id="handle"><i></i></div>
+        <div class="stream" id="stream"></div>
+        <div class="mug" id="mug">
+          <div class="goal" id="goal"><span id="goal-label">50%</span></div>
+          <div class="liquid" id="liquid"><div class="foam"></div><div class="bubbles" id="bubbles"></div></div>
+          <div class="shine"></div>
+        </div>
+        <div class="fx" id="fx"></div>
+      </div>
+    </div>
+    <p class="status" id="status" aria-live="polite">Hold to pour. Let go on the line.</p>
+    <p class="game-hint keys-only">Or hold Space.</p>
+  </main>
+</body>
+</html>

@@ -1,0 +1,44 @@
+<!doctype html>
+<html lang="en" data-root="../../">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="color-scheme" content="light dark">
+  <meta name="theme-color" content="#f6f7f8">
+  <meta name="description" content="Clear the board without hitting a mine.">
+  <title>Minesweeper · toolspace</title>
+  <link rel="icon" href="../../assets/favicon.svg" type="image/svg+xml">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400..800&display=swap">
+  <link rel="stylesheet" href="../../assets/site.css">
+  <link rel="stylesheet" href="../../assets/game.css">
+  <link rel="stylesheet" href="style.css">
+  <script src="../../assets/site.js"></script>
+  <script src="../../assets/game.js" defer></script>
+  <script src="game.js" defer></script>
+</head>
+<body data-layout="app" data-page="minesweeper" data-title="Minesweeper" data-back="games/" data-sound>
+  <main class="game">
+    <div class="toolbar">
+      <div class="segmented sizes" role="group" aria-label="Board size">
+        <button type="button" data-size="easy" aria-pressed="true">9×9</button>
+        <button type="button" data-size="medium" aria-pressed="false">16×16</button>
+      </div>
+      <div class="segmented tools" role="group" aria-label="Tap action">
+        <button type="button" data-tool="dig" aria-pressed="true">Dig</button>
+        <button type="button" data-tool="flag" aria-pressed="false">Flag</button>
+      </div>
+    </div>
+    <div class="hud">
+      <div class="stat"><span>Mines</span><b id="left">10</b></div>
+      <div class="stat"><span>Time</span><b id="time">0</b></div>
+      <div class="stat"><span>Best</span><b id="best">–</b></div>
+    </div>
+    <div class="board game-board" id="board"></div>
+    <p class="status" id="status" aria-live="polite"></p>
+    <div class="game-actions"><button class="button button-secondary" type="button" id="restart">New game</button></div>
+    <p class="game-hint keys-only">Right-click to flag. Click a number to open around it once its mines are flagged.</p>
+  </main>
+</body>
+</html>

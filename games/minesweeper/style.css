@@ -1,0 +1,46 @@
+/* Minesweeper */
+
+.game { --game-width: 460px; }
+.toolbar { display: flex; gap: 8px; margin-bottom: 12px; }
+.toolbar .segmented { flex: 1; }
+
+.board {
+  display: grid;
+  gap: 3px;
+  padding: 6px;
+  border-radius: 14px;
+  background: var(--board);
+  touch-action: manipulation;
+}
+.board.medium { gap: 2px; padding: 5px; }
+.cell {
+  aspect-ratio: 1;
+  min-width: 0;
+  padding: 0;
+  border: 0;
+  border-radius: 5px;
+  background: var(--cell);
+  color: var(--text);
+  font: 750 clamp(11px, 3.6vw, 16px)/1 var(--font);
+  box-shadow: inset 0 -2px 0 rgb(0 0 0 / 7%);
+  -webkit-touch-callout: none;
+}
+.medium .cell { border-radius: 3px; font-size: clamp(9px, 2.4vw, 13px); }
+.cell:hover:not(.open) { filter: brightness(.96); }
+:root[data-theme="dark"] .cell:hover:not(.open) { filter: brightness(1.2); }
+.cell.open { background: var(--cell-open); box-shadow: none; cursor: default; animation: reveal .18s ease-out backwards; }
+@keyframes reveal { from { transform: scale(.6); } }
+.cell.flag { color: #e8862a; }
+.cell.mine { background: #f8d4d9; color: #c42d45; }
+.cell.mine.hit { background: #e5485f; color: #fff; }
+:root[data-theme="dark"] .cell.mine { background: #4a2229; color: #ff8a9b; }
+:root[data-theme="dark"] .cell.mine.hit { background: #d63b52; color: #fff; }
+.cell.wrong { text-decoration: line-through; }
+.n1 { color: #3b6fe0; } .n2 { color: #22975f; } .n3 { color: #d8434f; } .n4 { color: #7b4fd1; }
+.n5 { color: #c46a12; } .n6 { color: #138a9a; } .n7 { color: #444; } .n8 { color: #888; }
+:root[data-theme="dark"] .n1 { color: #7ea7ff; } :root[data-theme="dark"] .n2 { color: #5fd3a5; }
+:root[data-theme="dark"] .n3 { color: #ff8a8a; } :root[data-theme="dark"] .n4 { color: #c4a8ff; }
+:root[data-theme="dark"] .n5 { color: #f0b27a; } :root[data-theme="dark"] .n6 { color: #67d8e6; }
+:root[data-theme="dark"] .n7 { color: #ddd; }
+.board.won { box-shadow: 0 0 0 3px var(--good); }
+.board.over { cursor: pointer; }

@@ -1,0 +1,37 @@
+<!doctype html>
+<html lang="en" data-root="../../">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="color-scheme" content="light dark">
+  <meta name="theme-color" content="#f6f7f8">
+  <meta name="description" content="Two players, or play the computer.">
+  <title>Tic Tac Toe · toolspace</title>
+  <link rel="icon" href="../../assets/favicon.svg" type="image/svg+xml">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400..800&display=swap">
+  <link rel="stylesheet" href="../../assets/site.css">
+  <link rel="stylesheet" href="../../assets/game.css">
+  <link rel="stylesheet" href="style.css">
+  <script src="../../assets/site.js"></script>
+  <script src="../../assets/game.js" defer></script>
+  <script src="game.js" defer></script>
+</head>
+<body data-layout="app" data-page="tic-tac-toe" data-title="Tic Tac Toe" data-back="games/" data-sound>
+  <main class="game">
+    <div class="segmented modes" role="group" aria-label="Mode">
+      <button type="button" data-mode="pvp" aria-pressed="true">Two players</button>
+      <button type="button" data-mode="cpu" aria-pressed="false">vs Computer</button>
+    </div>
+    <div class="hud">
+      <div class="stat"><span id="label-x">X</span><b id="score-x">0</b></div>
+      <div class="stat"><span>Draws</span><b id="score-d">0</b></div>
+      <div class="stat"><span id="label-o">O</span><b id="score-o">0</b></div>
+    </div>
+    <div class="board game-board" id="board"></div>
+    <p class="status" id="status" aria-live="polite"></p>
+    <div class="game-actions"><button class="button button-secondary" type="button" id="restart">New game</button></div>
+  </main>
+</body>
+</html>

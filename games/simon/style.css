@@ -1,0 +1,42 @@
+/* Simon Says */
+
+.game { --game-width: 380px; }
+
+.pad {
+  position: relative;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  width: min(340px, 100%);
+  aspect-ratio: 1;
+  margin: 6px auto 0;
+  padding: 10px;
+  border-radius: 50%;
+  background: var(--board);
+  box-shadow: var(--shadow);
+}
+.pad-btn { border: 0; opacity: .42; transition: opacity .08s, filter .08s, transform .08s; touch-action: manipulation; }
+.pad-btn.red    { background: #f0566f; border-radius: 100% 8px 8px 8px; }
+.pad-btn.blue   { background: #4f8ff7; border-radius: 8px 100% 8px 8px; }
+.pad-btn.yellow { background: #f5b52a; border-radius: 8px 8px 8px 100%; }
+.pad-btn.green  { background: #2fc07f; border-radius: 8px 8px 100% 8px; }
+.pad-btn.lit { opacity: 1; filter: brightness(1.12) saturate(1.1); }
+.pad:not(.locked) .pad-btn:active { transform: scale(.97); }
+.pad.locked .pad-btn { cursor: default; }
+
+.pad-center {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 32%;
+  aspect-ratio: 1;
+  transform: translate(-50%, -50%);
+  border: 8px solid var(--board);
+  border-radius: 50%;
+  background: var(--surface);
+  color: var(--text);
+  font-size: 15px;
+  font-weight: 750;
+}
+.pad-center:disabled { opacity: 1; cursor: default; }
+.pad.wrong { animation: shake .3s ease; }

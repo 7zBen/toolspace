@@ -1,0 +1,128 @@
+/* Clock: the whole page is the clock face. */
+
+html, body { height: 100%; overflow: hidden; }
+
+.stage {
+  --face-bg: #0f1a2c;
+  --face-text: #f0f4fa;
+  --face-muted: #8e9bb3;
+  --face-accent: #8d9aff;
+  --face-tick: rgb(255 255 255 / 22%);
+  position: fixed;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  background: var(--face-bg);
+  color: var(--face-text);
+  container-type: size;
+  transition: background .35s, color .35s;
+  user-select: none;
+  -webkit-user-select: none;
+}
+.stage[data-face="paper"] { --face-bg: #f4efe6; --face-text: #2a2620; --face-muted: #8a7f70; --face-accent: #c0583a; --face-tick: rgb(42 38 32 / 22%); }
+.stage[data-face="sage"]  { --face-bg: #1f2e28; --face-text: #e4efe7; --face-muted: #8ea99a; --face-accent: #9ed3b5; --face-tick: rgb(228 239 231 / 22%); }
+.stage[data-face="ember"] { --face-bg: #1d1412; --face-text: #ffe8d6; --face-muted: #b08e7a; --face-accent: #ff8a4c; --face-tick: rgb(255 232 214 / 20%); }
+.stage[data-face="mono"]  { --face-bg: #000;    --face-text: #fff;    --face-muted: #8a8a8a; --face-accent: #fff;    --face-tick: rgb(255 255 255 / 25%); }
+
+/* ---------- Face ---------- */
+
+.face { display: grid; justify-items: center; gap: 2.5cqh; }
+.digital { display: flex; align-items: center; gap: 2.2cqw; font-variant-numeric: tabular-nums; line-height: .9; }
+.hm { font-size: min(24cqw, 50cqh); font-weight: 650; letter-spacing: -.05em; }
+.side { display: grid; gap: 1.4cqh; justify-items: start; }
+.secs { font-size: min(7cqw, 15cqh); font-weight: 560; color: var(--face-accent); letter-spacing: -.02em; }
+.ampm { font-size: min(3.4cqw, 7cqh); font-weight: 700; color: var(--face-muted); letter-spacing: .08em; }
+.date { color: var(--face-muted); font-size: min(2.8cqw, 5.4cqh); font-weight: 560; text-align: center; }
+.date .zone { color: var(--face-accent); }
+
+.analog { display: none; width: min(74cqh, 74cqw); height: min(74cqh, 74cqw); }
+.is-analog .analog { display: block; }
+.is-analog .digital { display: none; }
+.is-analog .face { gap: 2cqh; }
+.analog .dial { fill: none; stroke: var(--face-tick); stroke-width: 1.5; }
+.analog .tick { stroke: var(--face-tick); stroke-width: 1.2; stroke-linecap: round; }
+.analog .tick.major { stroke: var(--face-text); stroke-width: 2.6; opacity: .75; }
+.analog .hand { stroke: var(--face-text); stroke-linecap: round; }
+.analog .hour { stroke-width: 6; }
+.analog .min { stroke-width: 4; }
+.analog .sec { stroke: var(--face-accent); stroke-width: 1.6; }
+.analog .cap { fill: var(--face-accent); }
+.analog .num { fill: var(--face-muted); font: 600 13px var(--font); text-anchor: middle; dominant-baseline: central; }
+
+/* ---------- Controls (fade out when idle) ---------- */
+
+.controls {
+  position: absolute;
+  top: max(16px, env(safe-area-inset-top));
+  left: max(16px, env(safe-area-inset-left));
+  right: max(16px, env(safe-area-inset-right));
+  display: flex;
+  gap: 8px;
+  transition: opacity .4s;
+}
+.controls-gap { flex: 1; }
+.ctrl {
+  display: inline-grid;
+  place-items: center;
+  width: 42px;
+  height: 42px;
+  padding: 0;
+  border: 1px solid color-mix(in srgb, var(--face-text) 16%, transparent);
+  border-radius: 12px;
+  background: color-mix(in srgb, var(--face-text) 6%, transparent);
+  color: var(--face-text);
+  backdrop-filter: blur(6px);
+  transition: border-color .2s, background .2s;
+}
+.ctrl:hover { border-color: var(--face-accent); background: color-mix(in srgb, var(--face-text) 12%, transparent); }
+
+.fs-hint {
+  position: absolute;
+  bottom: max(24px, env(safe-area-inset-bottom));
+  left: 50%;
+  transform: translateX(-50%);
+  padding: 7px 14px;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--face-text) 10%, transparent);
+  color: var(--face-muted);
+  font-size: 13px;
+  font-weight: 600;
+  white-space: nowrap;
+  transition: opacity .6s;
+}
+
+.stage.idle { cursor: none; }
+.stage.idle .controls, .stage.idle .fs-hint, .fs-hint.gone { opacity: 0; pointer-events: none; }
+
+/* ---------- Settings drawer ---------- */
+
+.settings {
+  position: fixed;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 20;
+  width: min(340px, 100%);
+  padding: max(20px, env(safe-area-inset-top)) 22px 24px;
+  overflow-y: auto;
+  background: var(--surface);
+  color: var(--text);
+  box-shadow: -20px 0 50px rgb(0 0 0 / 30%);
+  animation: slide-in .22s ease;
+}
+@keyframes slide-in { from { transform: translateX(100%); } }
+.settings-scrim { position: fixed; inset: 0; z-index: 15; background: rgb(0 0 0 / 30%); display: none; }
+.settings-open .settings-scrim { display: block; }
+.settings-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 18px; }
+.settings-head h2 { font-size: 17px; font-weight: 720; letter-spacing: -.02em; }
+.face-name { margin-left: 6px; color: var(--muted); font-weight: 500; }
+
+.swatches { display: flex; flex-wrap: wrap; gap: 10px; }
+.swatch { width: 38px; height: 38px; padding: 0; border: 1px solid var(--border-strong); border-radius: 50%; transition: transform .15s; }
+.swatch:hover { transform: scale(1.08); }
+.swatch[aria-pressed="true"] { box-shadow: 0 0 0 2px var(--surface), 0 0 0 4px var(--accent); }
+
+.keys { display: grid; gap: 8px; margin: 0; padding: 0; list-style: none; color: var(--muted); font-size: 13px; }
+.keys kbd { margin-right: 8px; }
+
+@media (hover: none) { .keys { display: none; } }

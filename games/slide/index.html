@@ -1,0 +1,36 @@
+<!doctype html>
+<html lang="en" data-root="../../">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="color-scheme" content="light dark">
+  <meta name="theme-color" content="#f6f7f8">
+  <meta name="description" content="Join matching tiles to reach 2048.">
+  <title>Slide · toolspace</title>
+  <link rel="icon" href="../../assets/favicon.svg" type="image/svg+xml">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400..800&display=swap">
+  <link rel="stylesheet" href="../../assets/site.css">
+  <link rel="stylesheet" href="../../assets/game.css">
+  <link rel="stylesheet" href="style.css">
+  <script src="../../assets/site.js"></script>
+  <script src="../../assets/game.js" defer></script>
+  <script src="game.js" defer></script>
+</head>
+<body data-layout="app" data-page="slide" data-title="Slide" data-back="games/" data-sound>
+  <main class="game">
+    <div class="hud">
+      <div class="stat"><span>Score</span><b id="score">0</b></div>
+      <div class="stat"><span>Best</span><b id="best">0</b></div>
+    </div>
+    <div class="board game-board" id="board">
+      <div class="slots" id="slots"></div>
+      <div class="tiles" id="tiles"></div>
+      <div class="overlay" id="overlay"><div><strong id="overlay-title">Game over</strong><span id="overlay-text">Tap to play again</span></div></div>
+    </div>
+    <div class="game-actions"><button class="button button-secondary" type="button" id="restart">New game</button></div>
+    <p class="game-hint">Arrow keys, WASD, or swipe.</p>
+  </main>
+</body>
+</html>

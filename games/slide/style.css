@@ -1,0 +1,56 @@
+/* Slide (2048) */
+
+.game { --game-width: 420px; }
+
+.board {
+  --gap: 10px;
+  --cell: calc((100% - 3 * var(--gap)) / 4);
+  position: relative;
+  aspect-ratio: 1;
+  padding: var(--gap);
+  border-radius: 16px;
+  background: var(--board);
+  touch-action: none;
+}
+.slots { display: grid; grid-template-columns: repeat(4, 1fr); gap: var(--gap); height: 100%; }
+.slots i { border-radius: 10px; background: var(--cell-open); }
+.tiles { position: absolute; inset: var(--gap); }
+
+.tile {
+  position: absolute;
+  left: calc(var(--c) * (var(--cell) + var(--gap)));
+  top: calc(var(--r) * (var(--cell) + var(--gap)));
+  width: var(--cell);
+  height: var(--cell);
+  display: grid;
+  place-items: center;
+  border-radius: 10px;
+  background: var(--tile-bg);
+  color: var(--tile-fg, #1b2433);
+  font-size: clamp(20px, 8vw, 34px);
+  font-weight: 800;
+  letter-spacing: -.03em;
+  transition: left .11s ease-out, top .11s ease-out;
+}
+.tile.big { font-size: clamp(16px, 6vw, 26px); }
+.tile.huge { font-size: clamp(13px, 4.6vw, 20px); }
+.tile.new { animation: appear .16s ease-out .08s backwards; }
+.tile.merged { animation: merge .18s ease-out; z-index: 2; }
+@keyframes appear { from { transform: scale(0); } }
+@keyframes merge { 50% { transform: scale(1.14); } }
+
+.v2    { --tile-bg: #e6ecf6; }
+.v4    { --tile-bg: #cfdcf2; }
+.v8    { --tile-bg: #9dbcf2; }
+.v16   { --tile-bg: #6c9cf5; --tile-fg: #fff; }
+.v32   { --tile-bg: #4a7ff0; --tile-fg: #fff; }
+.v64   { --tile-bg: #2fc07f; --tile-fg: #fff; }
+.v128  { --tile-bg: #22a56a; --tile-fg: #fff; }
+.v256  { --tile-bg: #f5b52a; }
+.v512  { --tile-bg: #f08c22; --tile-fg: #fff; }
+.v1024 { --tile-bg: #f0566f; --tile-fg: #fff; }
+.v2048 { --tile-bg: #a46bf0; --tile-fg: #fff; box-shadow: 0 0 18px #a46bf0; }
+.vmax  { --tile-bg: #1b2433; --tile-fg: #fff; }
+:root[data-theme="dark"] .v2 { --tile-bg: #3a465a; --tile-fg: #e8edf5; }
+:root[data-theme="dark"] .v4 { --tile-bg: #4a5a78; --tile-fg: #e8edf5; }
+:root[data-theme="dark"] .vmax { --tile-bg: #f0f4fa; --tile-fg: #111925; }

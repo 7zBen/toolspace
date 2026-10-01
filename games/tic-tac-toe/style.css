@@ -1,0 +1,27 @@
+/* Tic Tac Toe */
+
+.game { --game-width: 380px; }
+.modes { margin-bottom: 14px; }
+
+.board { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+.cell {
+  aspect-ratio: 1;
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  background: var(--surface);
+  color: var(--text);
+  font-size: clamp(40px, 13vw, 60px);
+  font-weight: 700;
+  line-height: 1;
+  touch-action: manipulation;
+  transition: background .16s, border-color .16s;
+}
+.cell:hover:not(:disabled) { border-color: var(--accent-ring); }
+.cell:disabled { cursor: default; opacity: 1; }
+.cell.x { color: var(--accent); }
+.cell.o { color: #e0627a; }
+.cell span { display: inline-block; animation: stamp .18s ease-out; }
+@keyframes stamp { from { transform: scale(.4); opacity: 0; } }
+.cell.win { border-color: var(--good); background: color-mix(in srgb, var(--good) 14%, var(--surface)); }
+.board.over .cell:not(.win) { opacity: .55; }
+.board.over { cursor: pointer; }

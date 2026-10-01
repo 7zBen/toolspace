@@ -1,0 +1,52 @@
+/* Wordle */
+
+.game { --game-width: 400px; }
+.message { min-height: 1.5em; margin: 0 0 10px; color: var(--muted); font-weight: 600; text-align: center; }
+
+.grid { display: grid; gap: 6px; width: min(330px, 100%); margin: 0 auto 16px; }
+.grid.done { cursor: pointer; }
+.row { display: grid; grid-template-columns: repeat(5, 1fr); gap: 6px; }
+.row.shake { animation: shake .3s ease; }
+.tile {
+  display: grid;
+  place-items: center;
+  aspect-ratio: 1;
+  border: 2px solid var(--border);
+  border-radius: 8px;
+  background: var(--surface);
+  font-size: clamp(22px, 7vw, 28px);
+  font-weight: 800;
+  text-transform: uppercase;
+}
+.tile.filled { border-color: var(--border-strong); animation: pop .1s ease-out; }
+@keyframes pop { 50% { transform: scale(1.08); } }
+.tile.flip { animation: flip .45s ease backwards; }
+@keyframes flip { 0% { transform: rotateX(0); } 50% { transform: rotateX(90deg); } 100% { transform: rotateX(0); } }
+.tile.good, .key.good { border-color: var(--good-tile); background: var(--good-tile); color: #fff; }
+.tile.mid,  .key.mid  { border-color: var(--mid-tile);  background: var(--mid-tile);  color: #fff; }
+.tile.bad,  .key.bad  { border-color: var(--faint); background: var(--faint); color: #fff; }
+:root[data-theme="dark"] .tile.bad, :root[data-theme="dark"] .key.bad { border-color: #3a4558; background: #3a4558; color: #a6b4c5; }
+
+.keyboard { display: grid; gap: 7px; }
+.keyboard .row-keys { display: flex; justify-content: center; gap: 5px; }
+.key {
+  flex: 1;
+  max-width: 44px;
+  height: 52px;
+  padding: 0;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--surface-muted);
+  color: var(--text);
+  font-size: 15px;
+  font-weight: 700;
+  text-transform: uppercase;
+  touch-action: manipulation;
+  transition: background .2s, color .2s;
+}
+.key.wide { flex: 1.6; max-width: 68px; font-size: 12px; }
+.key:active { transform: translateY(1px); }
+
+.confetti { position: fixed; inset: 0; z-index: 50; overflow: hidden; pointer-events: none; }
+.confetti i { position: absolute; top: -14px; width: 8px; height: 13px; border-radius: 2px; animation: fall 1.4s ease-in forwards; }
+@keyframes fall { to { transform: translateY(105vh) rotate(320deg); opacity: .3; } }

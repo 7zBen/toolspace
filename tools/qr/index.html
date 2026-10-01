@@ -5,450 +5,138 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="color-scheme" content="light dark">
   <meta name="theme-color" content="#f6f7f8">
-  <meta name="description" content="Turn a link, some text or your Wi-Fi into a crisp QR code.">
+  <meta name="description" content="QR codes for links, text or Wi-Fi. PNG or SVG.">
   <title>QR Maker · toolspace</title>
   <link rel="icon" href="../../assets/favicon.svg" type="image/svg+xml">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400..800&display=swap">
   <link rel="stylesheet" href="../../assets/site.css">
+  <link rel="stylesheet" href="qr.css">
   <script src="../../assets/site.js"></script>
-  <script src="../../assets/qrcode.min.js"></script>
-  <style>
-    .mode-tabs { margin-bottom: 20px; }
-    .preview-surface { position: sticky; top: 24px; }
-    .qr-frame {
-      display: grid;
-      place-items: center;
-      padding: clamp(20px, 4vw, 36px);
-      border-radius: 14px;
-      background:
-        radial-gradient(circle at 1px 1px, var(--border-strong) 1px, transparent 0) 0 0 / 16px 16px,
-        var(--surface-muted);
-      border: 1px solid var(--border);
-    }
-    .qr-paper { position: relative; width: min(100%, 320px); aspect-ratio: 1; border-radius: 12px; overflow: hidden; box-shadow: 0 14px 34px rgb(20 35 60 / 14%); }
-    .qr-paper canvas { display: block; width: 100%; height: 100%; }
-    .qr-paper.transparent { background: repeating-conic-gradient(#e6e9ee 0 25%, #fff 0 50%) 0 0 / 16px 16px; }
-    .qr-placeholder { position: absolute; inset: 0; display: grid; place-items: center; padding: 24px; background: var(--surface); color: var(--faint); font-size: 13px; text-align: center; }
-    .qr-caption { margin: 14px 0 0; color: var(--muted); font-size: 12px; text-align: center; overflow-wrap: anywhere; }
-    .qr-caption strong { color: var(--text); font-weight: 650; }
-    .warn { display: flex; gap: 10px; margin-top: 14px; padding: 11px 13px; border-radius: 10px; background: var(--danger-tint); color: var(--danger); font-size: 12px; line-height: 1.5; }
-    .export-row { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 9px; margin-top: 18px; }
-    .export-row .select { min-height: 40px; padding-top: 8px; padding-bottom: 8px; }
-    .password-row { position: relative; }
-    .password-row .input { padding-right: 46px; }
-    .password-row button { position: absolute; right: 4px; top: 50%; transform: translateY(-50%); width: 34px; height: 34px; border: 0; background: none; }
-    .check { display: inline-flex; align-items: center; gap: 9px; font-size: 13px; cursor: pointer; }
-    .check input { width: 16px; height: 16px; accent-color: #526bf0; }
-    .counter { color: var(--faint); font-size: 11px; text-align: right; font-variant-numeric: tabular-nums; }
-    @media (max-width: 1080px) { .preview-surface { position: static; } }
-  </style>
+  <script src="../../assets/qrcode.min.js" defer></script>
+  <script src="qr.js" defer></script>
 </head>
-<body data-page="qr" data-title="QR Maker">
-  <main class="main">
-    <div class="main-inner">
-      <div class="page-heading">
-        <span class="eyebrow">Create</span>
-        <h1>A code anyone can scan.</h1>
-        <p>Make a sharp QR code for a link, a note, or your Wi-Fi. It's drawn right here in your browser, so nothing you type leaves this device.</p>
-      </div>
+<body data-layout="app" data-page="qr" data-title="QR Maker" data-back="">
+  <main class="app-main">
+    <div class="tool-layout equal">
+      <div class="stack">
+        <div class="surface">
+          <div class="segmented mode-tabs" role="tablist" aria-label="What the code holds">
+            <button type="button" role="tab" data-mode="link" aria-pressed="true"><span data-icon="link" data-icon-class="icon-sm"></span> Link</button>
+            <button type="button" role="tab" data-mode="text" aria-pressed="false"><span data-icon="text" data-icon-class="icon-sm"></span> Text</button>
+            <button type="button" role="tab" data-mode="wifi" aria-pressed="false"><span data-icon="wifi" data-icon-class="icon-sm"></span> Wi-Fi</button>
+          </div>
 
-      <div class="tool-layout equal">
-        <div class="stack">
-          <div class="surface">
-            <div class="segmented mode-tabs" role="tablist" aria-label="What the code holds">
-              <button type="button" role="tab" data-mode="link" aria-pressed="true"><span data-icon="link" data-icon-class="icon-sm"></span> Link</button>
-              <button type="button" role="tab" data-mode="text" aria-pressed="false"><span data-icon="text" data-icon-class="icon-sm"></span> Text</button>
-              <button type="button" role="tab" data-mode="wifi" aria-pressed="false"><span data-icon="wifi" data-icon-class="icon-sm"></span> Wi-Fi</button>
-            </div>
-
-            <div data-panel="link">
-              <div class="field">
-                <label for="in-link">Website address</label>
-                <input class="input" id="in-link" type="text" inputmode="url" placeholder="example.com/page" autocomplete="url" spellcheck="false">
-                <p class="field-hint">No need to type https://, it's added for you.</p>
-              </div>
-            </div>
-
-            <div data-panel="text" hidden>
-              <div class="field">
-                <label for="in-text">Text</label>
-                <textarea class="textarea" id="in-text" rows="5" placeholder="Anything: a note, a phone number, a code…"></textarea>
-                <span class="counter" id="text-count">0 characters</span>
-              </div>
-            </div>
-
-            <div data-panel="wifi" hidden>
-              <div class="field">
-                <label for="in-ssid">Network name</label>
-                <input class="input" id="in-ssid" type="text" placeholder="My Home Wi-Fi" autocomplete="off" spellcheck="false">
-              </div>
-              <div class="two-col">
-                <div class="field">
-                  <label for="in-sec">Security</label>
-                  <select class="select" id="in-sec">
-                    <option value="WPA">WPA / WPA2 / WPA3</option>
-                    <option value="WEP">WEP (old)</option>
-                    <option value="nopass">None (open)</option>
-                  </select>
-                </div>
-                <div class="field" id="pass-field">
-                  <label for="in-pass">Password</label>
-                  <div class="password-row">
-                    <input class="input" id="in-pass" type="password" autocomplete="off" spellcheck="false">
-                    <button class="icon-button" type="button" id="pass-toggle" aria-label="Show password" title="Show password"><span data-icon="eye" data-icon-class="icon-sm"></span></button>
-                  </div>
-                </div>
-              </div>
-              <label class="check"><input type="checkbox" id="in-hidden"> Hidden network</label>
-              <p class="field-hint" style="margin-top: 10px">The Wi-Fi password is never saved, not even in this browser.</p>
+          <div data-panel="link">
+            <div class="field">
+              <label for="in-link">Website address</label>
+              <input class="input" id="in-link" type="text" inputmode="url" placeholder="example.com/page" autocomplete="url" spellcheck="false">
             </div>
           </div>
 
-          <div class="surface">
-            <div class="surface-title"><div><h2>Look</h2><p>Keep strong contrast so phones can read it.</p></div></div>
+          <div data-panel="text" hidden>
             <div class="field">
-              <span class="field-label">Dot style</span>
-              <div class="segmented" role="group" aria-label="Dot style">
-                <button type="button" data-style="square" aria-pressed="true">Square</button>
-                <button type="button" data-style="rounded" aria-pressed="false">Rounded</button>
-                <button type="button" data-style="dots" aria-pressed="false">Dots</button>
-              </div>
+              <label for="in-text">Text</label>
+              <textarea class="textarea" id="in-text" rows="5" placeholder="Anything: a note, a phone number, a code…"></textarea>
+              <span class="counter" id="text-count">0 characters</span>
+            </div>
+          </div>
+
+          <div data-panel="wifi" hidden>
+            <div class="field">
+              <label for="in-ssid">Network name</label>
+              <input class="input" id="in-ssid" type="text" placeholder="My Home Wi-Fi" autocomplete="off" spellcheck="false">
             </div>
             <div class="two-col">
               <div class="field">
-                <label for="in-fg">Dots</label>
-                <div class="color-control"><input id="in-fg" type="color" value="#172334"><span class="mono" id="fg-label">#172334</span></div>
+                <label for="in-sec">Security</label>
+                <select class="select" id="in-sec">
+                  <option value="WPA">WPA / WPA2 / WPA3</option>
+                  <option value="WEP">WEP (old)</option>
+                  <option value="nopass">None (open)</option>
+                </select>
               </div>
-              <div class="field">
-                <label for="in-bg">Background</label>
-                <div class="color-control"><input id="in-bg" type="color" value="#ffffff"><span class="mono" id="bg-label">#ffffff</span></div>
+              <div class="field" id="pass-field">
+                <label for="in-pass">Password</label>
+                <div class="password-row">
+                  <input class="input" id="in-pass" type="password" autocomplete="off" spellcheck="false">
+                  <button class="icon-button" type="button" id="pass-toggle" aria-label="Show password" title="Show password"><span data-icon="eye" data-icon-class="icon-sm"></span></button>
+                </div>
               </div>
             </div>
-            <div class="setting-row">
-              <span class="setting-copy"><strong>Transparent background</strong><small>For placing on top of a design</small></span>
-              <label class="switch"><input id="in-transparent" type="checkbox" aria-label="Transparent background"><span></span></label>
-            </div>
-            <div class="setting-row">
-              <span class="setting-copy"><strong>Quiet border</strong><small>Blank margin that helps scanning</small></span>
-              <label class="switch"><input id="in-margin" type="checkbox" checked aria-label="Quiet border"><span></span></label>
-            </div>
-            <hr class="divider">
-            <div class="field">
-              <label for="in-ecc">Error correction</label>
-              <select class="select" id="in-ecc">
-                <option value="L">Low: smallest code</option>
-                <option value="M">Medium: recommended</option>
-                <option value="Q">High: survives scuffs</option>
-                <option value="H">Highest: survives a logo on top</option>
-              </select>
-            </div>
+            <label class="check"><input type="checkbox" id="in-hidden"> Hidden network</label>
+            <p class="field-hint wifi-note">The Wi-Fi password is never saved.</p>
           </div>
         </div>
 
-        <div class="surface preview-surface">
-          <div class="surface-title">
-            <div><h2>Your code</h2><p>Updates as you type.</p></div>
-            <span data-icon="qr"></span>
-          </div>
-          <div class="qr-frame">
-            <div class="qr-paper" id="paper">
-              <canvas id="canvas" width="1024" height="1024" role="img" aria-label="QR code preview"></canvas>
-              <div class="qr-placeholder" id="placeholder">Type something to make a code</div>
+        <div class="surface">
+          <div class="surface-title"><h2>Look</h2></div>
+          <div class="field">
+            <span class="field-label">Dot style</span>
+            <div class="segmented" role="group" aria-label="Dot style">
+              <button type="button" data-style="square" aria-pressed="true">Square</button>
+              <button type="button" data-style="rounded" aria-pressed="false">Rounded</button>
+              <button type="button" data-style="dots" aria-pressed="false">Dots</button>
             </div>
           </div>
-          <p class="qr-caption" id="caption"></p>
-          <div class="warn" id="warn" hidden></div>
-          <div class="export-row">
-            <select class="select" id="in-size" aria-label="PNG size">
-              <option value="512">PNG · 512 px</option>
-              <option value="1024">PNG · 1024 px</option>
-              <option value="2048">PNG · 2048 px</option>
-              <option value="4096">PNG · 4096 px (print)</option>
+          <div class="two-col">
+            <div class="field">
+              <label for="in-fg">Dots</label>
+              <div class="color-control"><input id="in-fg" type="color" value="#172334"><span class="mono" id="fg-label">#172334</span></div>
+            </div>
+            <div class="field">
+              <label for="in-bg">Background</label>
+              <div class="color-control"><input id="in-bg" type="color" value="#ffffff"><span class="mono" id="bg-label">#ffffff</span></div>
+            </div>
+          </div>
+          <div class="setting-row">
+            <strong>Transparent background</strong>
+            <label class="switch"><input id="in-transparent" type="checkbox" aria-label="Transparent background"><span></span></label>
+          </div>
+          <div class="setting-row">
+            <strong>Quiet border</strong>
+            <label class="switch"><input id="in-margin" type="checkbox" checked aria-label="Quiet border"><span></span></label>
+          </div>
+          <hr class="divider">
+          <div class="field">
+            <label for="in-ecc">Error correction</label>
+            <select class="select" id="in-ecc">
+              <option value="L">Low: smallest code</option>
+              <option value="M">Medium: recommended</option>
+              <option value="Q">High: survives scuffs</option>
+              <option value="H">Highest: survives a logo on top</option>
             </select>
-            <button class="button button-primary" id="dl-png" type="button" disabled><span data-icon="download" data-icon-class="icon-sm"></span> PNG</button>
           </div>
-          <div class="button-row" style="margin-top: 9px">
-            <button class="button button-secondary" id="dl-svg" type="button" disabled><span data-icon="download" data-icon-class="icon-sm"></span> SVG</button>
-            <button class="button button-soft" id="copy-img" type="button" disabled><span data-icon="copy" data-icon-class="icon-sm"></span> Copy image</button>
+        </div>
+      </div>
+
+      <div class="surface preview-surface">
+        <div class="surface-title"><h2>Preview</h2></div>
+        <div class="qr-frame">
+          <div class="qr-paper" id="paper">
+            <canvas id="canvas" width="1024" height="1024" role="img" aria-label="QR code preview"></canvas>
+            <div class="qr-placeholder" id="placeholder">Type something to make a code</div>
           </div>
+        </div>
+        <p class="qr-caption" id="caption"></p>
+        <div class="warn" id="warn" hidden></div>
+        <div class="export-row">
+          <select class="select" id="in-size" aria-label="PNG size">
+            <option value="512">PNG · 512 px</option>
+            <option value="1024">PNG · 1024 px</option>
+            <option value="2048">PNG · 2048 px</option>
+            <option value="4096">PNG · 4096 px (print)</option>
+          </select>
+          <button class="button button-primary" id="dl-png" type="button" disabled><span data-icon="download" data-icon-class="icon-sm"></span> PNG</button>
+        </div>
+        <div class="button-row export-more">
+          <button class="button button-secondary" id="dl-svg" type="button" disabled><span data-icon="download" data-icon-class="icon-sm"></span> SVG</button>
+          <button class="button button-soft" id="copy-img" type="button" disabled><span data-icon="copy" data-icon-class="icon-sm"></span> Copy image</button>
         </div>
       </div>
     </div>
   </main>
 
-  <script>
-    (function () {
-      "use strict";
-      var ts = window.toolspace;
-      var KEY = "toolspace-qr";
-      var $ = function (id) { return document.getElementById(id); };
-
-      if (typeof qrcode !== "function") {
-        $("placeholder").textContent = "The QR library didn't load. Try refreshing.";
-        return;
-      }
-      qrcode.stringToBytes = qrcode.stringToBytesFuncs["UTF-8"];
-
-      // Settings and the link/text persist; the Wi-Fi password deliberately does not.
-      var prefs = Object.assign({
-        mode: "link", link: "", text: "", ssid: "", sec: "WPA", hidden: false,
-        style: "square", fg: "#172334", bg: "#ffffff", transparent: false, margin: true, ecc: "M", size: "1024"
-      }, ts.store.get(KEY, {}));
-      function save() { ts.store.set(KEY, prefs); }
-
-      /* ---------- Payload ---------- */
-
-      function normalizeLink(raw) {
-        var v = raw.trim();
-        if (!v) return "";
-        if (!/^[a-z][a-z0-9+.-]*:/i.test(v)) v = "https://" + v;
-        return v;
-      }
-      function wifiEscape(s) { return s.replace(/([\\;,:"])/g, "\\$1"); }
-      function payload() {
-        if (prefs.mode === "link") return normalizeLink(prefs.link);
-        if (prefs.mode === "text") return prefs.text;
-        if (!prefs.ssid) return "";
-        var pass = $("in-pass").value;
-        return "WIFI:T:" + prefs.sec + ";S:" + wifiEscape(prefs.ssid) + ";" +
-          (prefs.sec !== "nopass" ? "P:" + wifiEscape(pass) + ";" : "") +
-          (prefs.hidden ? "H:true;" : "") + ";";
-      }
-
-      /* ---------- Geometry → one SVG path used by both canvas and SVG export ---------- */
-
-      function rr(x, y, w, h, r) {
-        return "M" + (x + r) + " " + y + "h" + (w - 2 * r) + "a" + r + " " + r + " 0 0 1 " + r + " " + r +
-          "v" + (h - 2 * r) + "a" + r + " " + r + " 0 0 1 " + (-r) + " " + r +
-          "h" + (2 * r - w) + "a" + r + " " + r + " 0 0 1 " + (-r) + " " + (-r) +
-          "v" + (2 * r - h) + "a" + r + " " + r + " 0 0 1 " + r + " " + (-r) + "z";
-      }
-      function circle(cx, cy, r) {
-        return "M" + (cx - r) + " " + cy + "a" + r + " " + r + " 0 1 0 " + (2 * r) + " 0a" + r + " " + r + " 0 1 0 " + (-2 * r) + " 0z";
-      }
-
-      function build(text) {
-        var qr = qrcode(0, prefs.ecc);
-        qr.addData(text);
-        qr.make();
-        var n = qr.getModuleCount();
-        var pad = prefs.margin ? 4 : 0;
-        var finders = [[0, 0], [n - 7, 0], [0, n - 7]];
-        function inFinder(r, c) {
-          return finders.some(function (f) { return c >= f[0] && c < f[0] + 7 && r >= f[1] && r < f[1] + 7; });
-        }
-        var d = "";
-        for (var r = 0; r < n; r++) {
-          for (var c = 0; c < n; c++) {
-            if (!qr.isDark(r, c)) continue;
-            if (prefs.style !== "square" && inFinder(r, c)) continue;
-            var x = c + pad, y = r + pad;
-            if (prefs.style === "square") d += "M" + x + " " + y + "h1v1h-1z";
-            else if (prefs.style === "rounded") d += rr(x + .04, y + .04, .92, .92, .32);
-            else d += circle(x + .5, y + .5, .43);
-          }
-        }
-        if (prefs.style !== "square") {
-          // Finder eyes drawn as soft rings so the code still reads as a QR code.
-          var rad = prefs.style === "dots" ? [3.5, 2.5, 1.5] : [2.1, 1.4, 1];
-          finders.forEach(function (f) {
-            var x = f[0] + pad, y = f[1] + pad;
-            d += rr(x, y, 7, 7, rad[0]) + rr(x + 1, y + 1, 5, 5, rad[1]) + rr(x + 2, y + 2, 3, 3, rad[2]);
-          });
-        }
-        return { path: d, size: n + pad * 2, modules: n, version: (n - 17) / 4 };
-      }
-
-      function draw(canvas, code, px) {
-        canvas.width = canvas.height = px;
-        var ctx = canvas.getContext("2d");
-        ctx.clearRect(0, 0, px, px);
-        if (!prefs.transparent) {
-          ctx.fillStyle = prefs.bg;
-          ctx.fillRect(0, 0, px, px);
-        }
-        var scale = px / code.size;
-        ctx.save();
-        ctx.scale(scale, scale);
-        ctx.fillStyle = prefs.fg;
-        ctx.fill(new Path2D(code.path), "evenodd");
-        ctx.restore();
-      }
-      function toSvg(code) {
-        return '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ' + code.size + " " + code.size +
-          '" width="' + code.size * 10 + '" height="' + code.size * 10 + '" shape-rendering="' + (prefs.style === "square" ? "crispEdges" : "geometricPrecision") + '">' +
-          (prefs.transparent ? "" : '<rect width="100%" height="100%" fill="' + prefs.bg + '"/>') +
-          '<path fill="' + prefs.fg + '" fill-rule="evenodd" d="' + code.path + '"/></svg>';
-      }
-
-      /* ---------- Contrast check ---------- */
-
-      function lum(hex) {
-        var v = [1, 3, 5].map(function (i) {
-          var c = parseInt(hex.substr(i, 2), 16) / 255;
-          return c <= .03928 ? c / 12.92 : Math.pow((c + .055) / 1.055, 2.4);
-        });
-        return .2126 * v[0] + .7152 * v[1] + .0722 * v[2];
-      }
-      function contrastWarning() {
-        if (prefs.transparent) return "";
-        var a = lum(prefs.fg), b = lum(prefs.bg);
-        var ratio = (Math.max(a, b) + .05) / (Math.min(a, b) + .05);
-        if (ratio < 3) return "Low contrast between dots and background. Some phones won't be able to read it.";
-        if (a > b) return "Light dots on a dark background can't be read by some scanner apps. Dark on light is safest.";
-        return "";
-      }
-
-      /* ---------- Render ---------- */
-
-      var current = null;
-      var canvas = $("canvas");
-      function render() {
-        var text = payload();
-        var warn = "";
-        current = null;
-        if (text) {
-          try { current = build(text); }
-          catch (e) { warn = "That's too much to fit in one QR code. Try shorter text or lower error correction."; }
-        }
-        $("placeholder").hidden = !!current;
-        $("paper").classList.toggle("transparent", prefs.transparent);
-        ["dl-png", "dl-svg", "copy-img"].forEach(function (id) { $(id).disabled = !current; });
-
-        if (current) {
-          draw(canvas, current, 1024);
-          var what = prefs.mode === "wifi" ? "joins <strong>" + ts.escapeHtml(prefs.ssid) + "</strong>"
-            : prefs.mode === "link" ? "opens <strong>" + ts.escapeHtml(text) + "</strong>"
-            : "shows " + text.length + " characters of text";
-          $("caption").innerHTML = "Scans to: " + what + "<br>Version " + current.version + " · " + current.modules + "×" + current.modules;
-          warn = warn || contrastWarning();
-          if (prefs.mode === "link" && !/^https?:\/\/[^\s/]+\.[^\s/]+/i.test(text) && /^https?:/i.test(text)) {
-            warn = warn || "That doesn't look like a full web address. Double-check it before printing.";
-          }
-        } else {
-          $("caption").textContent = "";
-        }
-        $("warn").hidden = !warn;
-        $("warn").textContent = warn;
-      }
-
-      var timer;
-      function scheduleRender() { clearTimeout(timer); timer = setTimeout(render, 90); }
-
-      /* ---------- Wire inputs ---------- */
-
-      function setMode(mode) {
-        prefs.mode = mode;
-        Array.prototype.forEach.call(document.querySelectorAll("[data-mode]"), function (b) {
-          b.setAttribute("aria-pressed", String(b.getAttribute("data-mode") === mode));
-          b.setAttribute("aria-selected", String(b.getAttribute("data-mode") === mode));
-        });
-        Array.prototype.forEach.call(document.querySelectorAll("[data-panel]"), function (p) {
-          p.hidden = p.getAttribute("data-panel") !== mode;
-        });
-      }
-      function setStyle(style) {
-        prefs.style = style;
-        Array.prototype.forEach.call(document.querySelectorAll("[data-style]"), function (b) {
-          b.setAttribute("aria-pressed", String(b.getAttribute("data-style") === style));
-        });
-      }
-      function paintColors() {
-        $("fg-label").textContent = prefs.fg;
-        $("bg-label").textContent = prefs.bg;
-        $("in-bg").disabled = prefs.transparent;
-      }
-
-      document.querySelector(".mode-tabs").addEventListener("click", function (e) {
-        var b = e.target.closest("[data-mode]");
-        if (!b) return;
-        setMode(b.getAttribute("data-mode"));
-        save(); render();
-        var first = document.querySelector('[data-panel="' + prefs.mode + '"] input, [data-panel="' + prefs.mode + '"] textarea');
-        if (first) first.focus();
-      });
-      Array.prototype.forEach.call(document.querySelectorAll("[data-style]"), function (b) {
-        b.addEventListener("click", function () { setStyle(b.getAttribute("data-style")); save(); render(); });
-      });
-
-      function bind(id, key, prop, evt) {
-        var node = $(id);
-        node[prop] = prefs[key];
-        node.addEventListener(evt || "input", function () {
-          prefs[key] = node[prop];
-          if (key === "fg" || key === "bg" || key === "transparent") paintColors();
-          if (key === "sec") $("pass-field").hidden = prefs.sec === "nopass";
-          if (key === "text") $("text-count").textContent = node.value.length + " characters";
-          save();
-          scheduleRender();
-        });
-      }
-      bind("in-link", "link", "value");
-      bind("in-text", "text", "value");
-      bind("in-ssid", "ssid", "value");
-      bind("in-sec", "sec", "value", "change");
-      bind("in-hidden", "hidden", "checked", "change");
-      bind("in-fg", "fg", "value");
-      bind("in-bg", "bg", "value");
-      bind("in-transparent", "transparent", "checked", "change");
-      bind("in-margin", "margin", "checked", "change");
-      bind("in-ecc", "ecc", "value", "change");
-      bind("in-size", "size", "value", "change");
-      $("in-pass").addEventListener("input", scheduleRender);
-      $("pass-toggle").addEventListener("click", function () {
-        var p = $("in-pass");
-        var show = p.type === "password";
-        p.type = show ? "text" : "password";
-        this.setAttribute("aria-label", show ? "Hide password" : "Show password");
-        this.title = this.getAttribute("aria-label");
-      });
-
-      /* ---------- Export ---------- */
-
-      function fileBase() {
-        if (prefs.mode === "wifi") return "wifi-" + (prefs.ssid || "network");
-        if (prefs.mode === "link") {
-          try { return "qr-" + new URL(payload()).hostname.replace(/^www\./, ""); } catch (e) {}
-        }
-        return "qr-code";
-      }
-      function safeName(s) { return s.replace(/[^a-z0-9.-]+/gi, "-").replace(/^-+|-+$/g, "").slice(0, 60) || "qr-code"; }
-      function pngBlob() {
-        var c = document.createElement("canvas");
-        draw(c, current, parseInt(prefs.size, 10));
-        return new Promise(function (resolve, reject) {
-          c.toBlob(function (b) { b ? resolve(b) : reject(new Error("toBlob failed")); }, "image/png");
-        });
-      }
-
-      $("dl-png").addEventListener("click", function () {
-        if (!current) return;
-        pngBlob().then(function (b) { ts.downloadBlob(b, safeName(fileBase()) + ".png"); });
-      });
-      $("dl-svg").addEventListener("click", function () {
-        if (!current) return;
-        ts.downloadBlob(new Blob([toSvg(current)], { type: "image/svg+xml" }), safeName(fileBase()) + ".svg");
-      });
-      $("copy-img").addEventListener("click", function () {
-        if (!current) return;
-        if (!navigator.clipboard || !window.ClipboardItem) { ts.toast("This browser can't copy images. Use Download instead."); return; }
-        // Safari needs the ClipboardItem created synchronously with a promise inside.
-        navigator.clipboard.write([new ClipboardItem({ "image/png": pngBlob() })])
-          .then(function () { ts.toast("QR code copied"); })
-          .catch(function () { ts.toast("Couldn't copy. Try Download instead."); });
-      });
-
-      /* ---------- Start ---------- */
-
-      setMode(prefs.mode);
-      setStyle(prefs.style);
-      paintColors();
-      $("pass-field").hidden = prefs.sec === "nopass";
-      $("text-count").textContent = prefs.text.length + " characters";
-      render();
-    })();
-  </script>
 </body>
 </html>

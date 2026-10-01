@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="color-scheme" content="light dark">
   <meta name="theme-color" content="#f6f7f8">
-  <meta name="description" content="toolspace: a small set of everyday tools. Clock, link queue and QR maker, all running in your browser.">
+  <meta name="description" content="toolspace: a clock, a link queue, a QR maker and a few games.">
   <title>toolspace</title>
   <link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -13,86 +13,20 @@
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400..800&display=swap">
   <link rel="stylesheet" href="assets/site.css">
   <script src="assets/site.js"></script>
+  <script src="assets/home.js" defer></script>
 </head>
-<body data-page="home" data-title="Home">
+<body data-layout="hub" data-page="home" data-title="Home">
   <main class="main">
     <div class="main-inner">
-      <section class="hero" aria-labelledby="hero-title">
-        <div>
-          <span class="hero-kicker"><span class="live-dot"></span> Your everyday workspace</span>
-          <h1 id="hero-title">Good tools. Less fuss.</h1>
-          <p>Useful little utilities, ready when you are. No account, no setup, nothing uploaded. Just open and go.</p>
-          <div class="hero-cta">
-            <a class="button button-hero" href="#tools">Explore the tools <span data-icon="arrow" data-icon-class="icon-sm"></span></a>
-            <a class="button button-hero-ghost" href="tools/link-queuer/" id="queue-cta">Open Link Queuer</a>
-          </div>
-        </div>
-        <a class="hero-clock" href="tools/clock/" aria-label="Open the clock">
-          <span class="hero-clock-label">Your time right now</span>
-          <div class="hero-time-row"><span class="hero-time" id="home-time">--:--</span><span class="hero-period" id="home-period"></span></div>
-          <div class="hero-date" id="home-date"></div>
-          <div class="hero-clock-foot"><span data-icon="clock" data-icon-class="icon-sm"></span><span id="home-zone">Local time</span></div>
-        </a>
+      <section class="section" aria-labelledby="tools-title">
+        <div class="section-heading"><h2 id="tools-title">Tools</h2></div>
+        <div class="card-grid" id="tool-grid"></div>
       </section>
-
-      <section id="tools" aria-labelledby="tools-title">
-        <div class="section-heading">
-          <div><h2 id="tools-title">Tools</h2><p>Pick one and get right to it.</p></div>
-          <span class="pill" id="tool-count"></span>
-        </div>
-        <div class="tool-grid" id="tool-grid"></div>
+      <section class="section" aria-labelledby="games-title">
+        <div class="section-heading"><h2 id="games-title">Games</h2><a href="games/">All games</a></div>
+        <div class="card-grid" id="game-grid"></div>
       </section>
     </div>
   </main>
-
-  <script>
-    (function () {
-      var ts = window.toolspace;
-
-      // Tool cards come from the shared registry so the sidebar and home never drift apart.
-      var grid = document.getElementById("tool-grid");
-      grid.innerHTML = ts.tools.map(function (t) {
-        return '<a class="tool-card" href="' + t.href + '">' +
-          '<span class="tool-card-icon ' + t.tint + '">' + ts.icon(t.icon, "icon-lg") + "</span>" +
-          "<strong>" + ts.escapeHtml(t.name) + "</strong>" +
-          "<span>" + ts.escapeHtml(t.blurb) + "</span>" +
-          '<span class="tool-card-go">Open ' + ts.icon("arrow", "icon-sm") + "</span></a>";
-      }).join("");
-      document.getElementById("tool-count").textContent = ts.tools.length + " TOOLS";
-
-      // Live clock in the hero, using the clock tool's 12/24h preference.
-      var clockPrefs = ts.store.get("toolspace-clock", {});
-      var hour12 = typeof clockPrefs.hour12 === "boolean"
-        ? clockPrefs.hour12
-        : /am|pm/i.test(new Date(2020, 0, 1, 13).toLocaleTimeString());
-      var timeEl = document.getElementById("home-time");
-      var periodEl = document.getElementById("home-period");
-      var dateEl = document.getElementById("home-date");
-      try {
-        document.getElementById("home-zone").textContent =
-          Intl.DateTimeFormat().resolvedOptions().timeZone.replace(/_/g, " ");
-      } catch (e) {}
-      function tick() {
-        var now = new Date();
-        var h = now.getHours();
-        var m = String(now.getMinutes()).padStart(2, "0");
-        if (hour12) {
-          timeEl.textContent = (h % 12 || 12) + ":" + m;
-          periodEl.textContent = h >= 12 ? "PM" : "AM";
-        } else {
-          timeEl.textContent = String(h).padStart(2, "0") + ":" + m;
-          periodEl.textContent = "";
-        }
-        dateEl.textContent = now.toLocaleDateString(undefined, { weekday: "long", day: "numeric", month: "long", year: "numeric" });
-      }
-      tick();
-      setInterval(tick, 1000);
-
-      // If there's a queue waiting, say so on the hero button.
-      var queue = ts.store.get("link-queuer-v1", null);
-      var left = queue && Array.isArray(queue.items) ? queue.items.filter(function (i) { return !i.done; }).length : 0;
-      if (left) document.getElementById("queue-cta").textContent = left + (left === 1 ? " link" : " links") + " waiting";
-    })();
-  </script>
 </body>
 </html>

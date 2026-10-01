@@ -1,0 +1,67 @@
+/* Candy Crush */
+
+.game { --game-width: 440px; }
+
+.goal-bar { height: 8px; overflow: hidden; border-radius: 99px; background: var(--surface-muted); border: 1px solid var(--border); }
+.goal-bar i { display: block; width: 0; height: 100%; border-radius: inherit; background: linear-gradient(90deg, #f0566f, #f5b52a); transition: width .35s ease; }
+.goal-text { margin: 6px 0 12px; color: var(--muted); font-size: 12px; text-align: center; font-variant-numeric: tabular-nums; }
+
+.board-wrap {
+  --gap: 5px;
+  position: relative;
+  padding: 8px;
+  border-radius: 16px;
+  background: var(--board);
+  touch-action: none;
+}
+.board { display: grid; grid-template-columns: repeat(7, 1fr); gap: var(--gap); }
+.slot { aspect-ratio: 1; border-radius: 10px; background: var(--cell-open); }
+.slot.selected { box-shadow: inset 0 0 0 3px var(--accent); }
+.slot.hint { animation: hint 1s ease-in-out infinite; }
+@keyframes hint { 50% { box-shadow: inset 0 0 0 3px #f5b52a; } }
+.pieces { position: absolute; inset: 8px; overflow: hidden; pointer-events: none; }
+
+/* A piece is positioned by --r/--c in grid steps. */
+.candy {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: calc((100% - 6 * var(--gap)) / 7);
+  aspect-ratio: 1;
+  display: grid;
+  place-items: center;
+  transform: translate(calc(var(--c) * (100% + var(--gap))), calc(var(--r) * (100% + var(--gap))));
+  transition: transform .2s cubic-bezier(.2, .8, .2, 1);
+}
+.candy.instant { transition: none; }
+.candy.burst { animation: burst .22s ease forwards; z-index: 3; }
+@keyframes burst { 40% { scale: 1.35; filter: brightness(1.4); } 100% { scale: 0; opacity: 0; } }
+.candy.morph { animation: morph .34s ease; }
+@keyframes morph { 50% { scale: 1.25; filter: brightness(1.3); } }
+
+.gem { position: relative; }
+.gem::after { content: ""; position: absolute; left: 16%; top: 12%; width: 38%; height: 24%; border-radius: 50%; background: rgb(255 255 255 / 50%); }
+.t0 .gem { width: 48%; height: 42%; border-radius: 50%; background: radial-gradient(circle at 35% 30%, #ffb3c0, #fb7185 46%, #be123c); box-shadow: inset 0 -3px 0 rgb(0 0 0 / 18%), 0 3px 0 rgb(0 0 0 / 16%); }
+.t0 .twist { position: absolute; top: 32%; width: 18%; height: 36%; background: linear-gradient(#ff9aab, #e11d48); clip-path: polygon(0 50%, 100% 8%, 100% 92%); }
+.t0 .twist.l { left: 8%; }
+.t0 .twist.r { right: 8%; transform: scaleX(-1); }
+.t1 .gem { width: 70%; height: 70%; border-radius: 50%; background: radial-gradient(circle at 32% 28%, #d6e8ff, #6ea8ff 42%, #1d4ed8); box-shadow: inset 0 -6px 0 rgb(0 0 0 / 16%), 0 4px 0 rgb(0 0 0 / 16%); }
+.t2 .gem { width: 66%; height: 66%; border-radius: 26%; background: radial-gradient(circle at 32% 28%, #b6f5d0, #3dd68c 44%, #15803d); box-shadow: inset 0 -5px 0 rgb(0 0 0 / 16%), 0 4px 0 rgb(0 0 0 / 16%); }
+.t3 .gem { width: 52%; height: 74%; border-radius: 50% 50% 42% 42% / 62% 62% 38% 38%; background: radial-gradient(circle at 50% 16%, #fffce8, #fde047 38%, #eab308 78%, #a16207); box-shadow: inset 0 -6px 0 rgb(0 0 0 / 12%), 0 4px 0 rgb(0 0 0 / 16%); }
+.t4 .gem { width: 46%; height: 72%; border-radius: 50% / 40% 40% 60% 60%; background: radial-gradient(circle at 32% 24%, #efd0ff, #c084fc 46%, #7e22ce); box-shadow: inset 0 -5px 0 rgb(0 0 0 / 16%), 0 4px 0 rgb(0 0 0 / 16%); transform: rotate(-18deg); }
+
+/* Specials: 1 = striped across, 2 = striped down, 3 = wrapped, 4 = colour bomb */
+.stripes { position: absolute; inset: 18%; z-index: 2; border-radius: 8px; mix-blend-mode: overlay; }
+.s1 .stripes { background: repeating-linear-gradient(90deg, rgb(255 255 255 / 92%) 0 3px, transparent 3px 7px); }
+.s2 .stripes { background: repeating-linear-gradient(180deg, rgb(255 255 255 / 92%) 0 3px, transparent 3px 7px); }
+.s3 .gem { scale: .72; }
+.s3 .wrapper { position: absolute; inset: 10%; border: 3px solid #ffe08a; border-radius: 50%; box-shadow: 0 0 10px #ffb020, inset 0 0 8px rgb(255 224 138 / 80%); }
+.bomb { position: relative; width: 78%; height: 78%; border-radius: 50%; background: conic-gradient(#fb7185, #ffb020, #3dd68c, #6ea8ff, #c084fc, #fb7185); box-shadow: 0 0 14px #ffb020; animation: spin 1.6s linear infinite; }
+.bomb::after { content: ""; position: absolute; inset: 22%; border-radius: 50%; background: #12151c; }
+@keyframes spin { to { transform: rotate(360deg); } }
+
+.beam { position: absolute; z-index: 7; border-radius: 99px; background: linear-gradient(90deg, transparent, #fff, transparent); opacity: .85; animation: fade .28s ease forwards; }
+.beam.down { background: linear-gradient(180deg, transparent, #fff, transparent); }
+.ring { position: absolute; z-index: 7; border: 3px solid #ffe08a; border-radius: 50%; animation: ring .35s ease-out forwards; }
+@keyframes ring { to { transform: scale(2.2); opacity: 0; } }
+@keyframes fade { to { opacity: 0; } }
